@@ -1,0 +1,10 @@
+MySQL:
+  host: 'localhost'
+  port: 3306
+  database: 'HyperingEconomyDatabase'
+  username: 'root'
+  password: ''
+  table: 'playerdata'
+SaveInterval: 10
+InitialPossessionMoney: 5000
+EnableMedian: 2

@@ -1,0 +1,16 @@
+name: HyperingEconomy
+main: amata1219.hypering.economy.spigot.SSideHyperingEconomy
+version: 1.0.0
+author: amata1219(Twitter@amata1219)
+
+commands:
+  main:
+    description: main command.
+    usage: /<command>
+    permission: hypering.economy.main
+    permission-message: You do not have permission(<permission>).
+  admin:
+    description: admin command.
+    usage: /<command>
+    permission: hypering.economy.admin
+    permission-message: You do not have permission(<permission>).
