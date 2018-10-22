@@ -13,9 +13,9 @@ import amata1219.hypering.economy.callback.Callback;
 
 public class MainCommand implements TabExecutor{
 
-	private SSideHyperingEconomy plugin;
+	private SHyperingEconomy plugin;
 
-	public MainCommand(SSideHyperingEconomy plugin){
+	public MainCommand(SHyperingEconomy plugin){
 		this.plugin = plugin;
 	}
 
@@ -26,7 +26,7 @@ public class MainCommand implements TabExecutor{
 
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args){
-		SSideHyperingEconomyAPI api = plugin.getSSideHyperingEconomyAPI();
+		SHyperingEconomyAPI api = plugin.getSSideHyperingEconomyAPI();
 		if(!(sender instanceof Player)){
 			warn(sender, "入力されたコマンドはゲーム内でのみ実行出来ます。");
 			return true;

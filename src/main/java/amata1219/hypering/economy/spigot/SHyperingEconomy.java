@@ -7,22 +7,27 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class SSideHyperingEconomy extends JavaPlugin{
+public class SHyperingEconomy extends JavaPlugin{
 
-	private static SSideHyperingEconomy plugin;
-	private SSideManager manager;
+	private static SHyperingEconomy plugin;
 
 	private HashMap<String, TabExecutor> commands;
 
 	@Override
 	public void onEnable(){
 		plugin = this;
+
 		saveDefaultConfig();
-		manager = new SSideManager(plugin);
-		getServer().getMessenger().registerIncomingPluginChannel(plugin, "BungeeCord", manager);
+
+		SManager.load();
+
+		getServer().getMessenger().registerIncomingPluginChannel(plugin, "BungeeCord", SManager.getManager());
 		getServer().getMessenger().registerOutgoingPluginChannel(plugin, "BungeeCord");
-		getServer().getPluginManager().registerEvents(manager, plugin);
-		commands = new HashMap<String, TabExecutor>();
+
+		getServer().getPluginManager().registerEvents(SManager.getManager(), plugin);
+
+		commands = new HashMap<>();
+
 		commands.put("main", new MainCommand(plugin));
 		commands.put("admin", new AdminCommand(plugin));
 	}
@@ -32,16 +37,12 @@ public class SSideHyperingEconomy extends JavaPlugin{
 
 	}
 
-	public static SSideHyperingEconomy getPlugin(){
+	public static SHyperingEconomy getPlugin(){
 		return plugin;
 	}
 
-	public SSideManager getManager(){
-		return manager;
-	}
-
-	public SSideHyperingEconomyAPI getSSideHyperingEconomyAPI(){
-		return manager;
+	public SHyperingEconomyAPI getSSideHyperingEconomyAPI(){
+		return SManager.getManager();
 	}
 
 	@Override

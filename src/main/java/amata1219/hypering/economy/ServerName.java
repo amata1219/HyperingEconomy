@@ -3,7 +3,13 @@ package amata1219.hypering.economy;
 public enum ServerName {
 
 	main,
-	mainflat,
-	lgw;
+	lgw,
+	silopvp,
+	rpg,
+	pata,
+	p,
+	athletic,
+	event,
+	minigame;
 
 }

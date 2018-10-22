@@ -1,7 +1,7 @@
 package amata1219.hypering.economy.callback;
 
-public interface Callback {
+public interface Callback<T> {
 
-	void done(Object value);
+	void done(T value);
 
 }

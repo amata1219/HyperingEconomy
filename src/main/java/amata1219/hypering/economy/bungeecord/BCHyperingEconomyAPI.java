@@ -2,21 +2,10 @@ package amata1219.hypering.economy.bungeecord;
 
 import java.util.UUID;
 
-import amata1219.hypering.economy.MySQL;
 import amata1219.hypering.economy.PlayerData;
 import amata1219.hypering.economy.ServerName;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
-import net.md_5.bungee.config.Configuration;
 
-public interface BCSideHyperingEconomyAPI {
-
-	public BCSideHyperingEconomy getPlugin();
-
-	public MySQL getMySQL();
-
-	public Configuration getConfig();
-
-	public PlayerData getPlayerData(ProxiedPlayer player);
+public interface BCHyperingEconomyAPI {
 
 	public PlayerData getPlayerData(UUID uuid);
 
@@ -33,7 +22,8 @@ public interface BCSideHyperingEconomyAPI {
 	public void sendMoney(ServerName name, UUID sender, UUID receiver, long money);
 
 	public String getMoneyRanking(ServerName name);
-	//uuid-money,uuid-money,uuid-money…
+	//uuid-money,uuid-money,uuid-money...
+
 	public long getNumberOfTickets(UUID uuid);
 
 	public void addTicket(UUID uuid, long numberOfTickets, ServerName pricePerTicketFromTicket);

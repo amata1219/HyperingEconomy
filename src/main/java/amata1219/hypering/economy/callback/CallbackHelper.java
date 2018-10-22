@@ -1,14 +1,12 @@
 package amata1219.hypering.economy.callback;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class CallbackHelper<T> {
 
-	private final Map<UUID, HashMap<Integer, T>> callbacks = new WeakHashMap<>();
+	private final Map<Integer, T> callbacks = new WeakHashMap<>();
 
 	private final AtomicInteger seqId = new AtomicInteger(1);
 
@@ -16,37 +14,21 @@ public class CallbackHelper<T> {
 		return seqId.getAndIncrement();
 	}
 
-	public synchronized T getAndRemove(UUID uuid, int seq){
-		if(uuid == null)
-			return null;
-
-		HashMap<Integer, T> map = callbacks.get(uuid);
-		if(map == null)
-			return null;
-
-		T callback = map.get(seq);
-		map.remove(seq);
-		if(map.size() == 0)
-			callbacks.remove(uuid);
+	public synchronized T getAndRemove(int seqId){
+		T callback = callbacks.get(seqId);
+		callbacks.remove(seqId);
 		return callback;
 	}
 
-	public synchronized void put(UUID uuid, T callback, int seq){
-		if(uuid == null || callback == null)
+	public synchronized void put(int seqId, T callback){
+		if(callback == null)
 			return;
 
-		HashMap<Integer, T> map = callbacks.get(uuid);
-		if(map == null){
-			map = new HashMap<Integer, T>();
-			callbacks.put(uuid, map);
-		}
-		map.put(seq, callback);
+		callbacks.put(seqId, callback);
 	}
 
-	public synchronized void remove(UUID uuid){
-		if(uuid == null)
-			return;
-		callbacks.remove(uuid);
+	public synchronized void remove(int seqId){
+		callbacks.remove(seqId);
 	}
 
 }

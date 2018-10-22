@@ -5,20 +5,21 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import amata1219.hypering.economy.bungeecord.BCSideManager;
+import amata1219.hypering.economy.bungeecord.BCManager;
 
 public class PlayerData{
 
-	private BCSideManager manager;
+	private BCManager manager;
 
 	private UUID uuid;
-	private Map<ServerName, Long> money = new HashMap<>();
+	private Map<ServerName, Long> money;
 	private long tickets, ticketAmounts;
 
 	public PlayerData(UUID uuid){
-		manager = BCSideManager.getManager();
+		manager = BCManager.getManager();
 
 		this.uuid = uuid;
+		this.money = new HashMap<>();
 
 		Arrays.asList(ServerName.values()).forEach(serverName -> {
 			money.put(serverName, manager.getMedian(serverName));
@@ -30,7 +31,7 @@ public class PlayerData{
 	public static PlayerData load(UUID uuid, Map<ServerName, Long> money, long tickets, long ticketAmounts){
 		PlayerData data = new PlayerData(uuid);
 
-		data.manager = BCSideManager.getManager();
+		data.manager = BCManager.getManager();
 
 		data.uuid = uuid;
 		data.money = money;
@@ -49,111 +50,138 @@ public class PlayerData{
 	}
 
 	public void save(){
-		manager.getMySQL().savePlayerData(this);
+		MySQL.savePlayerData(this);
 	}
 
 	public long getMoney(ServerName name){
 		return money.get(name);
 	}
 
-	public void setMoney(ServerName name, long money, boolean update){
+	public void setMoney(ServerName name, long money, boolean update, boolean save){
 		this.money.put(name, money < 0 ? 0 : money);
 
 		if(update)
 			manager.updateMedian(name);
+
+		if(save)
+			save();
 	}
 
-	public void addMoney(ServerName name, long money){
-		setMoney(name, getMoney(name) + money, true);
+	public void addMoney(ServerName name, long money, boolean save){
+		setMoney(name, getMoney(name) + money, true, save);
 	}
 
-	public void removeMoney(ServerName name, long money){
-		setMoney(name, getMoney(name) - money, true);
+	public void removeMoney(ServerName name, long money, boolean save){
+		setMoney(name, getMoney(name) - money, true, save);
 	}
 
-	public void sendMoney(ServerName name, UUID to, long money){
+	public void sendMoney(ServerName name, UUID to, long money, boolean save){
 		money = money > getMoney(name) ? getMoney(name) : money;
 
 		PlayerData data = manager.getPlayerData(to);
 		if(data == null)
 			return;
 
-		data.addMoney(name, money);
+		data.addMoney(name, money, save);
 		data.save();
 
-		removeMoney(name, money);
+		removeMoney(name, money, save);
 	}
 
 	public String toMoneyText(){
-		return getMoney(ServerName.main) + "," + getMoney(ServerName.mainflat) + "," + getMoney(ServerName.lgw);
+		return getMoney(ServerName.main) + "," + getMoney(ServerName.lgw) + "," + getMoney(ServerName.silopvp) + "," + getMoney(ServerName.rpg) + "," + getMoney(ServerName.pata) + "," + getMoney(ServerName.p) + "," + getMoney(ServerName.athletic) + "," + getMoney(ServerName.event) + "," + getMoney(ServerName.minigame);
 	}
 
 	public long getTickets(){
 		return tickets;
 	}
 
-	public void setTickets(long tickets){
+	public void setTickets(long tickets, boolean save){
 		this.tickets = tickets;
+
+		if(save)
+			save();
 	}
 
-	public void addTickets(long tickets){
+	public void addTickets(long tickets, boolean save){
 		this.tickets += tickets;
+
+		if(save)
+			save();
 	}
 
-	public void removeTickets(long tickets){
+	public void removeTickets(long tickets, boolean save){
 		this.tickets = tickets > this.tickets ? 0 : this.tickets - tickets;
+
+		if(save)
+			save();
 	}
 
 	public long getTicketAmounts(){
 		return ticketAmounts;
 	}
 
-	public void setTicketAmounts(long ticketAmounts){
+	public void setTicketAmounts(long ticketAmounts, boolean save){
 		this.ticketAmounts = ticketAmounts;
+
+		if(save)
+			save();
 	}
 
-	public void addTicketAmounts(long ticketAmounts){
+	public void addTicketAmounts(long ticketAmounts, boolean save){
 		this.ticketAmounts += ticketAmounts;
+
+		if(save)
+			save();
 	}
 
-	public void removeTicketAmounts(long ticketAmounts){
+	public void removeTicketAmounts(long ticketAmounts, boolean save){
 		this.ticketAmounts = ticketAmounts > this.ticketAmounts ? 0 : this.ticketAmounts - ticketAmounts;
+
+		if(save)
+			save();
 	}
 
 	public long getAmountPerTicket(){
 		return ticketAmounts / tickets;
 	}
 
-	public void addTickets(long tickets, ServerName name){
-		addTickets(tickets, manager.getTicketPrice(name) * tickets);
+	public void addTickets(long tickets, ServerName name, boolean save){
+		addTickets(tickets, manager.getTicketPrice(name) * tickets, save);
 	}
-	public void addTickets(long tickets, long amountPerTicket){
-		addTickets(tickets);
-		addTicketAmounts(amountPerTicket * tickets);
+	public void addTickets(long tickets, long amountPerTicket, boolean save){
+		addTickets(tickets, false);
+		addTicketAmounts(amountPerTicket * tickets, save);
 
 	}
 
-	public void removeTicket(long tickets){
+	public void removeTicket(long tickets, boolean save){
 		tickets = tickets > this.tickets ? this.tickets : tickets;
 
 		for(long l = tickets; l > 0; l--){
-			removeTicketAmounts(getAmountPerTicket());
-			removeTickets(1);
+			removeTicketAmounts(getAmountPerTicket(), false);
+			removeTickets(1, false);
 		}
+
+		if(save)
+			save();
 	}
 
-	public void buyTicket(ServerName name, long tickets, long amountPerTicket){
-		setMoney(name, getMoney(name) - tickets * amountPerTicket, false);
-		addTickets(tickets, amountPerTicket);
+	public void buyTicket(ServerName name, long tickets, long amountPerTicket, boolean save){
+		setMoney(name, getMoney(name) - tickets * amountPerTicket, false, false);
+		addTickets(tickets, amountPerTicket, save);
 	}
 
-	public void sellTicket(ServerName name, long tickets){
+	public void sellTicket(ServerName name, long tickets, boolean save){
 		tickets = tickets > getTickets() ? getTickets() : tickets;
 
 		for(long l = tickets; l > 0; l--){
-			setMoney(name, getMoney(name) - getAmountPerTicket(), false);
-			removeTicket(1);
+			setMoney(name, getMoney(name) - getAmountPerTicket(), false, false);
+			removeTicket(1, false);
 		}
+
+		if(save)
+			save();
 	}
 
 	public long getTotalAssets(ServerName name){

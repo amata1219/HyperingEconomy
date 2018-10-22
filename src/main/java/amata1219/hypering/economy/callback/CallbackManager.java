@@ -1,52 +1,21 @@
 package amata1219.hypering.economy.callback;
 
-import java.lang.ref.WeakReference;
-import java.util.Map;
-import java.util.UUID;
-import java.util.WeakHashMap;
+import amata1219.hypering.economy.spigot.Result;
 
 public class CallbackManager {
 
-	private final CallbackHelper<Callback> callbackHelper = new CallbackHelper<Callback>();
+	private final CallbackHelper<Callback<Result>> helper = new CallbackHelper<>();
 
-	private Map<UUID, Callback> callbacks = new WeakHashMap<>();
-	private Map<UUID, Object> objects = new WeakHashMap<>();
-
-	public CallbackManager(){
-
+	public int send(Callback<Result> callback){
+		final int seqId = helper.getAndIncrementSeqId();
+		helper.put(seqId, callback);
+		return seqId;
 	}
 
-	public Map<UUID, Callback> getCallbacksMap(){
-		return callbacks;
-	}
-
-	public Map<UUID, Object> getObjectsMap(){
-		return objects;
-	}
-
-	public int send(UUID uuid, Callback callback){
-		final WeakReference<UUID> ref = new WeakReference<>(uuid);
-		final int seq = callbackHelper.getAndIncrementSeqId();
-		callbackHelper.put(uuid, callback, seq);
-		try{
-			Object result = objects.get(uuid);
-			done(ref, seq, result);
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-		return seq;
-	}
-
-	private void done(final WeakReference<UUID> ref, final int seq, final Object result){
-		if(ref.get() == null || result == null)
-			return;
-		Callback callback = callbackHelper.getAndRemove(ref.get(), seq);
+	public void done(final int seqId, final Result result){
+		Callback<Result> callback = helper.getAndRemove(seqId);
 		if(callback != null)
 			callback.done(result);
-	}
-
-	public void removeCallbackFor(UUID uuid){
-		callbackHelper.remove(uuid);
 	}
 
 }

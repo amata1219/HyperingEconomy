@@ -12,49 +12,17 @@ import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.config.ConfigurationProvider;
 import net.md_5.bungee.config.YamlConfiguration;
 
-public class BCSideHyperingEconomy extends Plugin{
+public class BCHyperingEconomy extends Plugin{
 
-	private static BCSideHyperingEconomy plugin;
+	private static BCHyperingEconomy plugin;
 
-	private BCSideManager manager;
+	private BCManager manager;
 	private Configuration config;
 
 	@Override
 	public void onEnable(){
 		plugin = this;
-		loadConfig();
-		getProxy().registerChannel("BungeeCord");
-		manager = new BCSideManager(plugin);
-		getProxy().getPluginManager().registerListener(plugin, manager);
-		manager.startTaskRunnable();
-	}
 
-	@Override
-	public void onDisable(){
-		manager.stopTaskRunnable();
-		manager.getPlayerDataMap().values().forEach(data -> data.save());
-		if(!manager.getMySQL().disconnect()){
-			System.out.println("MySQL disconnect error");
-		}
-	}
-
-	public static BCSideHyperingEconomy getPlugin(){
-		return plugin;
-	}
-
-	public BCSideHyperingEconomyAPI getBCSideHyerpingEconomyAPI(){
-		return manager;
-	}
-
-	public BCSideManager getManager(){
-		return manager;
-	}
-
-	public Configuration getConfig(){
-		return config;
-	}
-
-	public void loadConfig(){
 		File file = new File(getDataFolder(), "bcside_config.yml");
 		if(!file.exists()){
 			try{
@@ -76,6 +44,29 @@ public class BCSideHyperingEconomy extends Plugin{
 		}catch(IOException e){
 			e.printStackTrace();
 		}
+
+		getProxy().registerChannel("BungeeCord");
+
+		getProxy().getPluginManager().registerListener(plugin, manager = new BCManager());
+		manager.startTaskRunnable();
+	}
+
+	@Override
+	public void onDisable(){
+		manager.stopTaskRunnable();
+		manager.getPlayerDataMap().values().forEach(data -> data.save());
+	}
+
+	public static BCHyperingEconomy getPlugin(){
+		return plugin;
+	}
+
+	public BCHyperingEconomyAPI getBCHyperingEconomyAPI(){
+		return manager;
+	}
+
+	public Configuration getConfig(){
+		return config;
 	}
 
 }

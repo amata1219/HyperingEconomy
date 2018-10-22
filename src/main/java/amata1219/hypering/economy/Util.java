@@ -4,9 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.UUID;
-
-public class Utility {
+public class Util {
 
 	public static String getString(DataInputStream input){
 		try {
@@ -31,13 +29,12 @@ public class Utility {
 		return Long.valueOf(s).longValue();
 	}
 
-	public static byte[] toByteArray(Channel channel, UUID sender, UUID uuid, String... messages){
+	public static byte[] toByteArray(String sub, String... messages){
 		ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 		DataOutputStream output = new DataOutputStream(bytes);
 		try{
-			output.writeUTF(channel.toString());
-			output.writeUTF(sender.toString());
-			output.writeUTF(uuid.toString());
+			output.writeUTF(HyperingEconomyChannel.PACKET_ID);
+			output.writeUTF(sub);
 			for(String message: messages){
 				output.writeUTF(message);
 			}
@@ -46,20 +43,4 @@ public class Utility {
 		}
 		return bytes.toByteArray();
 	}
-
-	public static byte[] toByteArray(Channel channel, UUID sender, String... messages){
-		ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-		DataOutputStream output = new DataOutputStream(bytes);
-		try{
-			output.writeUTF(channel.toString());
-			output.writeUTF(sender.toString());
-			for(String message: messages){
-				output.writeUTF(message);
-			}
-		}catch(IOException e){
-			e.printStackTrace();
-		}
-		return bytes.toByteArray();
-	}
-
 }
