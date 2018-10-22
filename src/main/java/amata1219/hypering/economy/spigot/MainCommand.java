@@ -37,11 +37,11 @@ public class MainCommand implements TabExecutor{
 
 		}else if(args[0].equalsIgnoreCase("moneysee")){
 			if(args.length == 1){
-				api.getMoney(player, player.getUniqueId(), new Callback(){
+				api.getMoney(player, player.getUniqueId(), new Callback<Result>(){
 
 					@Override
-					public void done(Object value) {
-						scs(player, "あなたの所持金は¥" + (long) value + "です。");
+					public void done(Result result) {
+						scs(player, "あなたの所持金は¥" + result.getLong() + "です。");
 					}
 
 				});
@@ -50,22 +50,22 @@ public class MainCommand implements TabExecutor{
 					error(sender, "指定されたプレイヤーはオフラインまたは存在しません。");
 					return true;
 				}
-				api.getMoney(player, getUUID(args[1]), new Callback(){
+				api.getMoney(player, getUUID(args[1]), new Callback<Result>(){
 
 					@Override
-					public void done(Object value) {
-						scs(player, args[1] + "さんの所持金は¥" + (long) value + "です。");
+					public void done(Result result) {
+						scs(player, args[1] + "さんの所持金は¥" + result.getLong() + "です。");
 					}
 
 				});
 			}
 		}else if(args[0].equalsIgnoreCase("ticketsee")){
 			if(args.length == 1){
-				api.getNumberOfTickets(player, uuid, new Callback(){
+				api.getNumberOfTickets(player, uuid, new Callback<Result>(){
 
 					@Override
-					public void done(Object value) {
-						scs(player, "あなたのチケット所持数は" + (long) value + "枚です。");
+					public void done(Result result) {
+						scs(player, "あなたのチケット所持数は" + result.getLong() + "枚です。");
 					}
 
 				});
@@ -74,26 +74,25 @@ public class MainCommand implements TabExecutor{
 					error(sender, "指定されたプレイヤーはオフラインまたは存在しません。");
 					return true;
 				}
-				api.getNumberOfTickets(player, getUUID(args[1]), new Callback(){
+				api.getNumberOfTickets(player, getUUID(args[1]), new Callback<Result>(){
 
 					@Override
-					public void done(Object value) {
-						scs(player, args[1] + "さんのチケット所持数は" + (long) value + "枚です。");
+					public void done(Result result) {
+						scs(player, args[1] + "さんのチケット所持数は" + result.getLong() + "枚です。");
 					}
 
 				});
 			}
 		}else if(args[0].equalsIgnoreCase("ranking")){
-			api.getMoneyRanking(player, new Callback(){
+			api.getMoneyRanking(player, new Callback<Result>(){
 
 				@Override
-				public void done(Object value) {
-					scs(player, "所持金ランキング(テキスト処理してない)" + (String) value);
+				public void done(Result result) {
+					scs(player, "所持金ランキング(テキスト処理してない)" + result.getString());
 				}
 
 			});
 		}else if(args[0].equalsIgnoreCase("sendmoney")){
-			//main sendmoney [player] [money]
 			if(args.length == 1){
 				error(player, "送金相手と金額を指定して下さい。");
 				return true;

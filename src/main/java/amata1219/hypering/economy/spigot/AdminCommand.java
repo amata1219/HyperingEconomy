@@ -67,7 +67,7 @@ public class AdminCommand implements TabExecutor{
 					error(player, "減算する金額は半角数字で入力して下さい。");
 					return true;
 				}
-				api.substractMoney(player, getUUID(args[2]), toNumber(args[3]));
+				api.removeMoney(player, getUUID(args[2]), toNumber(args[3]));
 				scs(player, args[2] + "の所持金から¥" + args[3] + "減算しました。");
 			}else if(args[1].equalsIgnoreCase("see")){
 				if(args.length == 2){
@@ -77,11 +77,11 @@ public class AdminCommand implements TabExecutor{
 					error(player, "指定されたプレイヤーはオフラインまたは存在しません。");
 					return true;
 				}
-				api.getMoney(player, getUUID(args[2]), new Callback(){
+				api.getMoney(player, getUUID(args[2]), new Callback<Result>(){
 
 					@Override
-					public void done(Object value) {
-						scs(player, args[2] + "さんの所持金は¥" + (long) value + "です。");
+					public void done(Result result) {
+						scs(player, args[2] + "さんの所持金は¥" + result.getLong() + "です。");
 					}
 
 				});
@@ -127,7 +127,7 @@ public class AdminCommand implements TabExecutor{
 					error(player, "削除する枚数は半角数字で入力して下さい。");
 					return true;
 				}
-				api.substractTicket(player, getUUID(args[2]), toNumber(args[3]));
+				api.removeTicket(player, getUUID(args[2]), toNumber(args[3]));
 				scs(player, args[2] + "から" + args[3] + "枚チケットを削除しました。");
 			}else if(args[1].equalsIgnoreCase("see")){
 				if(args.length == 2){
@@ -137,39 +137,39 @@ public class AdminCommand implements TabExecutor{
 					error(player, "指定されたプレイヤーはオフラインまたは存在しません。");
 					return true;
 				}
-				api.getNumberOfTickets(player, getUUID(args[2]), new Callback(){
+				api.getNumberOfTickets(player, getUUID(args[2]), new Callback<Result>(){
 
 					@Override
-					public void done(Object value) {
-						scs(player, args[2] + "さんのチケット所持数は" + (long) value + "枚です。");
+					public void done(Result result) {
+						scs(player, args[2] + "さんのチケット所持数は" + result.getLong() + "枚です。");
 					}
 
 				});
 			}
 		}else if(args[0].equalsIgnoreCase("median")){
-			api.getMedian(player, new Callback(){
+			api.getMedian(player, new Callback<Result>(){
 
 				@Override
-				public void done(Object value) {
-					scs(player, "あなたがいるサーバーの現在の中央値は" + (long) value + "です。");
+				public void done(Result result) {
+					scs(player, "あなたがいるサーバーの現在の中央値は" + result.getLong() + "です。");
 				}
 
 			});
 		}else if(args[0].equalsIgnoreCase("ticketprice")){
-			api.getTicketPrice(player, new Callback(){
+			api.getTicketPrice(player, new Callback<Result>(){
 
 				@Override
-				public void done(Object value) {
-					scs(player, "あなたがいるサーバーのチケット相場価格は¥" + (long) value + "です。");
+				public void done(Result result) {
+					scs(player, "あなたがいるサーバーのチケット相場価格は¥" + result.getLong() + "です。");
 				}
 
 			});
 		}else if(args[0].equalsIgnoreCase("players")){
-			api.getNumberOfPlayerDataLoaded(player, new Callback(){
+			api.getNumberOfPlayerDataLoaded(player, new Callback<Result>(){
 
 				@Override
-				public void done(Object value) {
-					scs(player, "現在ロードされているプレイヤーデータ数は" + (long) value + "オブジェクトです。");
+				public void done(Result result) {
+					scs(player, "現在ロードされているプレイヤーデータ数は" + result.getLong() + "オブジェクトです。");
 				}
 
 			});

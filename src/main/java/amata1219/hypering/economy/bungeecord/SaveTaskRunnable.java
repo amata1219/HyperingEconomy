@@ -18,7 +18,7 @@ public class SaveTaskRunnable implements Runnable{
 
 	private void sort(){
 		for(ServerName name : ServerName.values()){
-			PlayerData[] data = (PlayerData[]) MySQL.getMySQL().getAllPlayerData().toArray(new PlayerData[]{});
+			PlayerData[] data = (PlayerData[]) MySQL.getAllPlayerData().toArray(new PlayerData[]{});
 			for(int i = 0; i < data.length - 1; i++){
 				for(int j = 0; j < data.length - i - 1; j++){
 					if(data[j].getMoney(name) < data[j + 1].getMoney(name)){
