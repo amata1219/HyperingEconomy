@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 import org.bukkit.entity.Player;
 
-public interface Will extends Serializable{
+public interface Will extends Serializable {
 
 	void done(Player player);
 

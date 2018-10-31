@@ -32,8 +32,8 @@ public class BCManager implements Listener, BCHyperingEconomyAPI{
 	 * メインフラット、買った土地に建物を建ててから転売が出来るのと、運営に売却して買った時のチケットをもらってフラットに出来る機能
 	 */
 
-	private BCHyperingEconomy plugin;
 	private static BCManager manager;
+
 	private Map<UUID, PlayerData> players = new HashMap<>();
 	private Map<UUID, PlayerData> withinMonth = new HashMap<>();
 
@@ -41,7 +41,7 @@ public class BCManager implements Listener, BCHyperingEconomyAPI{
 
 	private List<ScheduledTask> taskList = new ArrayList<>();
 
-	private Map<ServerName, List<Long>> calc = new HashMap<>();
+	private Map<ServerName, List<Long>> forCalc = new HashMap<>();
 	private Map<ServerName, Long> median = new HashMap<>();
 
 	private int saveInterval = 10, enableMedian = 2;
@@ -50,7 +50,7 @@ public class BCManager implements Listener, BCHyperingEconomyAPI{
 	public BCManager(){
 		manager = this;
 
-		Configuration config = plugin.getConfig();
+		Configuration config = BCHyperingEconomy.getPlugin().getConfig();
 
 		MySQL.load(config.getString("MySQL.host"), config.getInt("MySQL.port"), config.getString("MySQL.database"),
 				config.getString("MySQL.username"), config.getString("MySQL.password"), config.getString("MySQL.table"));
@@ -63,10 +63,8 @@ public class BCManager implements Listener, BCHyperingEconomyAPI{
 		loadPlayerDataOfOnlinePlayers();
 		loadWithinMonth();
 
-		for(ServerName name : ServerName.values()){
-			calc.put(name, new ArrayList<Long>());
-			updateMedian(name);
-		}
+		for(ServerName name : ServerName.values())
+			forCalc.put(name, new ArrayList<Long>());
 	}
 
 	public static BCManager getManager(){
@@ -97,7 +95,7 @@ public class BCManager implements Listener, BCHyperingEconomyAPI{
 	}
 
 	public void startTaskRunnable(){
-		plugin.getProxy().getScheduler().schedule(plugin, new SaveTaskRunnable(), 0, saveInterval, TimeUnit.MINUTES);
+		BCHyperingEconomy.getPlugin().getProxy().getScheduler().schedule(BCHyperingEconomy.getPlugin(), new SaveTaskRunnable(), 0, saveInterval, TimeUnit.MINUTES);
 	}
 
 	public void stopTaskRunnable(){
@@ -105,7 +103,7 @@ public class BCManager implements Listener, BCHyperingEconomyAPI{
 	}
 
 	public void loadPlayerDataOfOnlinePlayers(){
-		plugin.getProxy().getPlayers().forEach(player ->{
+		BCHyperingEconomy.getPlugin().getProxy().getPlayers().forEach(player ->{
 			UUID uuid = player.getUniqueId();
 			players.put(uuid, MySQL.getPlayerData(uuid));
 		});
@@ -134,32 +132,39 @@ public class BCManager implements Listener, BCHyperingEconomyAPI{
 	}
 
 	public void updateMedian(ServerName name){
-		List<Long> calc = this.calc.get(name);
+		List<Long> calc = forCalc.get(name);
+
 		for(PlayerData data : players.values()){
 			if(data.getTotalAssets(name) > 0){
 				calc.add(data.getTotalAssets(name));
 			}
 		}
+
 		for(PlayerData data : withinMonth.values()){
 			if(data.getTotalAssets(name) > 0){
 				calc.add(data.getTotalAssets(name));
 			}
 		}
+
 		if(calc.isEmpty()){
 			median.put(name, 0L);
 			return;
 		}
+
 		Collections.sort(calc);
 		int n = calc.size();
+
 		if(n == 0){
 			median.put(name, 0L);
 			return;
 		}
+
 		if(n % 2 == 0){
 			median.put(name, (Long) ((calc.get(n / 2 - 1) + calc.get(n / 2)) / 2));
 		}else{
 			median.put(name, (Long) (calc.get((n) / 2)));
 		}
+
 		calc.clear();
 	}
 
@@ -204,6 +209,7 @@ public class BCManager implements Listener, BCHyperingEconomyAPI{
 
 		channel.read(stream);
 		if(channel.isNull() || !channel.getMessage().equals(HyperingEconomyChannel.PACKET_ID))
+			return;
 
 		channel.read(stream);
 		if(channel.isNull())
@@ -245,9 +251,15 @@ public class BCManager implements Listener, BCHyperingEconomyAPI{
 			if(channel.isNull())
 				return;
 
+			long threshold = Long.valueOf(channel.getMessage()).longValue();
+
+			channel.read(stream);
+			if(channel.isNull())
+				return;
+
 			String seqId2 = channel.getMessage();
 
-			server.sendData("BungeeCord", Util.toByteArray(Channel.RETURN_HAS_MONEY, seqId2, String.valueOf(data.getMoney(name) >= Util.getLong(stream))));
+			server.sendData("BungeeCord", Util.toByteArray(Channel.RETURN_HAS_MONEY, seqId2, String.valueOf(data.getMoney(name) >= threshold)));
 			break;
 		case Channel.SET_MONEY:
 			channel.read(stream);

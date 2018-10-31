@@ -59,9 +59,11 @@ public class MySQL {
 			hikari.close();
 	}
 
-	public static boolean putCommand(String command){
+	public static boolean putCommand(String command, String substitution){
 		try(Connection con = hikari.getConnection();
 				PreparedStatement statement = con.prepareStatement(command)){
+				if(substitution != null)
+					statement.setString(1, substitution);
 
 			statement.executeUpdate();
 		}catch(SQLException e){
@@ -76,7 +78,8 @@ public class MySQL {
 		int exist = -1;
 
 		try(Connection con = hikari.getConnection();
-				PreparedStatement statement = con.prepareStatement("SELECT COUNT(uuid) AS count FROM " + database + "." + table + "WHERE uuid like '" + id + "'")){
+				PreparedStatement statement = con.prepareStatement("SELECT COUNT(uuid) AS count FROM " + database + "." + table + " WHERE uuid=?")){
+				statement.setString(1, id);
 
 			try(ResultSet result = statement.executeQuery()){
 				if(result.next())
@@ -93,7 +96,8 @@ public class MySQL {
 
 		if(exist == 1){
 			try(Connection con = hikari.getConnection();
-					PreparedStatement statement = con.prepareStatement("SELECT tickets, ticketamounts, main, mainflat, lgw FROM + " + database + "." + table + " WHERE uuid like '" + id + "'")){
+					PreparedStatement statement = con.prepareStatement("SELECT tickets, ticketamounts, main, lgw, silopvp, rpg, pata, p, athletic, event, minigame FROM " + database + "." + table + " WHERE uuid=?")){
+					statement.setString(1, id);
 
 				try(ResultSet result = statement.executeQuery()){
 					while(result.next()){
@@ -124,7 +128,7 @@ public class MySQL {
 			data = new PlayerData(uuid);
 
 			putCommand("INSERT INTO " + database + "." + table + " VALUES ('" + uuid.toString()+ "'," + System.currentTimeMillis()
-			+ "," + data.getTickets() + "," + data.getTicketAmounts() + "," + data.toMoneyText() + ")");
+			+ "," + data.getTickets() + "," + data.getTicketAmounts() + "," + data.toMoneyText() + ")", null);
 
 			return data;
 		}
@@ -135,7 +139,7 @@ public class MySQL {
 	public static List<PlayerData> getAllPlayerData(){
 		List<PlayerData> list = new ArrayList<>();
 		try(Connection con = hikari.getConnection();
-				PreparedStatement statement = con.prepareStatement("SELECT uuid, tickets, ticketamounts, main, mainflat, lgw FROM + " + database + "." + table)){
+				PreparedStatement statement = con.prepareStatement("SELECT uuid, tickets, ticketamounts, main, lgw, silopvp, rpg, pata, p, athletic, event, minigame FROM " + database + "." + table)){
 
 			try(ResultSet result = statement.executeQuery()){
 				while(result.next()){
@@ -167,19 +171,19 @@ public class MySQL {
 		return putCommand("UPDATE " + database + "." + table + " SET tickets = " + data.getTickets() + ",ticketamounts = "
 				+ data.getTicketAmounts() + ",main = " + data.getMoney(ServerName.main) + ",lgw = " + data.getMoney(ServerName.lgw)
 				+ ",silopvp = " + data.getMoney(ServerName.silopvp) + ",rpg = " + data.getMoney(ServerName.rpg) + ",pata = " + data.getMoney(ServerName.pata)
-				+ ",p = " + data.getMoney(ServerName.p) + ",athletic" + data.getMoney(ServerName.athletic) + ",event = " + data.getMoney(ServerName.event)
-				+ ",minigame = " + data.getMoney(ServerName.minigame) + " WHERE uuid = '" + data.getUniqueId().toString() + "'");
+				+ ",p = " + data.getMoney(ServerName.p) + ",athletic = " + data.getMoney(ServerName.athletic) + ",event = " + data.getMoney(ServerName.event)
+				+ ",minigame = " + data.getMoney(ServerName.minigame) + " WHERE uuid=?", data.getUniqueId().toString());
 	}
 
 	public static boolean saveLastLogined(PlayerData data){
-		return putCommand("UPDATE " + database + "." + table + " SET last = " + System.currentTimeMillis() + " where uuid = '" + data.getUniqueId().toString() + "'");
+		return putCommand("UPDATE " + database + "." + table + " SET last = " + System.currentTimeMillis() + " WHERE uuid=?", data.getUniqueId().toString());
 	}
 
 	public static Map<UUID, PlayerData> getWithinMonth(){
 		Map<UUID, PlayerData> map = new HashMap<>();
 
 		try(Connection con = hikari.getConnection();
-				PreparedStatement statement = con.prepareStatement("SELECT uuid, last, tickets, ticketamounts, main, mainflat, lgw FROM + " + database + "." + table)){
+				PreparedStatement statement = con.prepareStatement("SELECT uuid, last, tickets, ticketamounts, main, lgw, silopvp, rpg, pata, p, athletic, event, minigame FROM " + database + "." + table)){
 
 			try(ResultSet result = statement.executeQuery()){
 				while(result.next()){
@@ -214,7 +218,8 @@ public class MySQL {
 	public static boolean isOverOneMonth(UUID uuid){
 		long last = 0;
 		try(Connection con = hikari.getConnection();
-				PreparedStatement statement = con.prepareStatement("SELECT last FROM " + database + "." + table + " WHERE uuid  like '" + uuid.toString() + "'")){
+				PreparedStatement statement = con.prepareStatement("SELECT last FROM " + database + "." + table + " WHERE uuid=?")){
+				statement.setString(1, uuid.toString());
 
 			try(ResultSet result = statement.executeQuery()){
 				while(result.next())

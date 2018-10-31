@@ -7,6 +7,7 @@ import java.io.InputStream;
 
 import com.google.common.io.ByteStreams;
 
+import amata1219.hypering.economy.MySQL;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.config.ConfigurationProvider;
@@ -16,7 +17,6 @@ public class BCHyperingEconomy extends Plugin{
 
 	private static BCHyperingEconomy plugin;
 
-	private BCManager manager;
 	private Configuration config;
 
 	@Override
@@ -47,14 +47,19 @@ public class BCHyperingEconomy extends Plugin{
 
 		getProxy().registerChannel("BungeeCord");
 
-		getProxy().getPluginManager().registerListener(plugin, manager = new BCManager());
-		manager.startTaskRunnable();
+		new BCManager();
+
+		getProxy().getPluginManager().registerListener(plugin, BCManager.getManager());
+
+		BCManager.getManager().startTaskRunnable();
 	}
 
 	@Override
 	public void onDisable(){
-		manager.stopTaskRunnable();
-		manager.getPlayerDataMap().values().forEach(data -> data.save());
+		BCManager.getManager().stopTaskRunnable();
+		BCManager.getManager().getPlayerDataMap().values().forEach(data -> data.save());
+
+		MySQL.close();
 	}
 
 	public static BCHyperingEconomy getPlugin(){
@@ -62,7 +67,7 @@ public class BCHyperingEconomy extends Plugin{
 	}
 
 	public BCHyperingEconomyAPI getBCHyperingEconomyAPI(){
-		return manager;
+		return BCManager.getManager();
 	}
 
 	public Configuration getConfig(){

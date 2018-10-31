@@ -1,7 +1,5 @@
 package amata1219.hypering.economy.callback;
 
-import amata1219.hypering.economy.spigot.Result;
-
 public class CallbackManager {
 
 	private final CallbackHelper<Callback<Result>> helper = new CallbackHelper<>();

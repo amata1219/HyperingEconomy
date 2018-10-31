@@ -19,7 +19,7 @@ public class SHyperingEconomy extends JavaPlugin{
 
 		saveDefaultConfig();
 
-		SManager.load();
+		new SManager();
 
 		getServer().getMessenger().registerIncomingPluginChannel(plugin, "BungeeCord", SManager.getManager());
 		getServer().getMessenger().registerOutgoingPluginChannel(plugin, "BungeeCord");
@@ -34,7 +34,7 @@ public class SHyperingEconomy extends JavaPlugin{
 
 	@Override
 	public void onDisable(){
-
+		SManager.getManager().unload();
 	}
 
 	public static SHyperingEconomy getPlugin(){

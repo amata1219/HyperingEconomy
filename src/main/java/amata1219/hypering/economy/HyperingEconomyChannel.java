@@ -21,6 +21,7 @@ public class HyperingEconomyChannel {
 	public void read(DataInputStream stream){
 		try {
 			message = stream.readUTF();
+			System.out.println(message);
 		}catch(IOException e){
 			e.printStackTrace();
 			message = null;

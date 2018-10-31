@@ -9,29 +9,27 @@ import amata1219.hypering.economy.bungeecord.BCManager;
 
 public class PlayerData{
 
-	private BCManager manager;
-
 	private UUID uuid;
-	private Map<ServerName, Long> money;
+	private Map<ServerName, Long> money = new HashMap<>();
 	private long tickets, ticketAmounts;
 
-	public PlayerData(UUID uuid){
-		manager = BCManager.getManager();
+	private PlayerData(){
 
+	}
+
+	public PlayerData(UUID uuid){
 		this.uuid = uuid;
-		this.money = new HashMap<>();
+
+		BCManager manager = BCManager.getManager();
 
 		Arrays.asList(ServerName.values()).forEach(serverName -> {
 			money.put(serverName, manager.getMedian(serverName));
-
 			manager.updateMedian(serverName);
 		});
 	}
 
 	public static PlayerData load(UUID uuid, Map<ServerName, Long> money, long tickets, long ticketAmounts){
-		PlayerData data = new PlayerData(uuid);
-
-		data.manager = BCManager.getManager();
+		PlayerData data = new PlayerData();
 
 		data.uuid = uuid;
 		data.money = money;
@@ -61,7 +59,7 @@ public class PlayerData{
 		this.money.put(name, money < 0 ? 0 : money);
 
 		if(update)
-			manager.updateMedian(name);
+			BCManager.getManager().updateMedian(name);
 
 		if(save)
 			save();
@@ -78,12 +76,13 @@ public class PlayerData{
 	public void sendMoney(ServerName name, UUID to, long money, boolean save){
 		money = money > getMoney(name) ? getMoney(name) : money;
 
-		PlayerData data = manager.getPlayerData(to);
+		PlayerData data = BCManager.getManager().getPlayerData(to);
 		if(data == null)
 			return;
 
 		data.addMoney(name, money, save);
-		data.save();
+		if(!save)
+			data.save();
 
 		removeMoney(name, money, save);
 	}
@@ -147,7 +146,7 @@ public class PlayerData{
 	}
 
 	public void addTickets(long tickets, ServerName name, boolean save){
-		addTickets(tickets, manager.getTicketPrice(name) * tickets, save);
+		addTickets(tickets, BCManager.getManager().getTicketPrice(name) * tickets, save);
 	}
 	public void addTickets(long tickets, long amountPerTicket, boolean save){
 		addTickets(tickets, false);

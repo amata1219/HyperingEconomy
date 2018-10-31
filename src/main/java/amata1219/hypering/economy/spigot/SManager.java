@@ -18,6 +18,7 @@ import amata1219.hypering.economy.HyperingEconomyChannel;
 import amata1219.hypering.economy.Util;
 import amata1219.hypering.economy.callback.Callback;
 import amata1219.hypering.economy.callback.CallbackManager;
+import amata1219.hypering.economy.callback.Result;
 
 public class SManager implements Listener, PluginMessageListener, SHyperingEconomyAPI{
 
@@ -27,16 +28,32 @@ public class SManager implements Listener, PluginMessageListener, SHyperingEcono
 
 	private List<Will> wills = new ArrayList<>();
 
-	private SManager(){
+	@SuppressWarnings("unchecked")
+	public SManager(){
 		manager = this;
-	}
 
-	public static void load(){
-		new SManager();
+		SHyperingEconomy plugin = SHyperingEconomy.getPlugin();
+
+		String str = plugin.getConfig().getString("Wills");
+		if(str != null){
+			Object obj = Util.fromBase64(str);
+			if(obj != null)
+				wills = (ArrayList<Will>) obj;
+		}
+		plugin.getConfig().set("Wills", null);
+		plugin.saveConfig();
+		plugin.reloadConfig();
 	}
 
 	public static SManager getManager(){
 		return manager;
+	}
+
+	public void unload(){
+		SHyperingEconomy plugin = SHyperingEconomy.getPlugin();
+		plugin.getConfig().set("Wills", Util.toBase64(wills));
+		plugin.saveConfig();
+		plugin.reloadConfig();
 	}
 
 	@Override
@@ -55,13 +72,13 @@ public class SManager implements Listener, PluginMessageListener, SHyperingEcono
 		if(channel.isNull())
 			return;
 
-		int seqId = Integer.valueOf(channel.getMessage()).intValue();
+		String sub = channel.getMessage();
 
 		channel.read(stream);
 		if(channel.isNull())
 			return;
 
-		String sub = channel.getMessage();
+		int seqId = Integer.valueOf(channel.getMessage()).intValue();
 
 		switch(sub){
 		case Channel.RETURN_GET_MONEY:
@@ -151,7 +168,7 @@ public class SManager implements Listener, PluginMessageListener, SHyperingEcono
 	@Override
 	public void getMoney(Player sender, UUID uuid, Callback<Result> callback){
 		int seqId = callbackManager.send(callback);
-		send(sender, Util.toByteArray(Channel.GET_MONEY, uuid.toString(), sender.getUniqueId().toString(), String.valueOf(seqId)));
+		send(sender, Util.toByteArray(Channel.GET_MONEY, uuid.toString(), String.valueOf(seqId)));
 	}
 
 	@Override
@@ -237,7 +254,7 @@ public class SManager implements Listener, PluginMessageListener, SHyperingEcono
 	@Override
 	public void getNumberOfTickets(Player sender, UUID uuid, Callback<Result> callback){
 		int seqId = callbackManager.send(callback);
-		send(sender, Util.toByteArray(Channel.GET_TICKETS, uuid.toString(), sender.getUniqueId().toString(), String.valueOf(seqId)));
+		send(sender, Util.toByteArray(Channel.GET_TICKETS, uuid.toString(), String.valueOf(seqId)));
 	}
 
 	@Override

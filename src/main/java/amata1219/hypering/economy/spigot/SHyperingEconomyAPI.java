@@ -5,8 +5,9 @@ import java.util.UUID;
 import org.bukkit.entity.Player;
 
 import amata1219.hypering.economy.callback.Callback;
+import amata1219.hypering.economy.callback.Result;
 
-interface SHyperingEconomyAPI{
+public interface SHyperingEconomyAPI{
 
 	boolean isEnableEconomy();
 

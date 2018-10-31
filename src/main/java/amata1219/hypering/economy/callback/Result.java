@@ -1,4 +1,4 @@
-package amata1219.hypering.economy.spigot;
+package amata1219.hypering.economy.callback;
 
 public class Result {
 

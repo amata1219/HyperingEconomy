@@ -10,6 +10,7 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 
 import amata1219.hypering.economy.callback.Callback;
+import amata1219.hypering.economy.callback.Result;
 
 public class MainCommand implements TabExecutor{
 
