@@ -32,7 +32,11 @@ public interface BCHyperingEconomyAPI {
 
 	public void substractTicket(UUID uuid, long numberOfTickets);
 
+	public boolean canBuyTicket(UUID uuid, ServerName where, long numberOfTickets);
+
 	public void buyTicket(UUID uuid, ServerName where, long numberOfTickets);
+
+	public boolean canSellTicket(UUID uuid, ServerName where, long numberOfTickets);
 
 	public void sellTicket(UUID uuid, ServerName where, long numberOfTickets);
 

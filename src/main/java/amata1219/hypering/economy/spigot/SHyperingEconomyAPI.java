@@ -48,9 +48,13 @@ public interface SHyperingEconomyAPI{
 
 	void removeTicket(UUID uuid, long numberOfTickets);
 
+	void canBuyTicket(Player sender, UUID uuid, long numberOfTickets, Callback<Result> callback);
+
 	void buyTicket(Player sender, UUID uuid, long numberOfTickets);
 
 	void buyTicket(UUID uuid, long numberOfTickets);
+
+	void canSellTicket(Player sender, UUID uuid, long numberOfTickets, Callback<Result> callback);
 
 	void sellTicket(Player sender, UUID uuid, long numberOfTickets);
 

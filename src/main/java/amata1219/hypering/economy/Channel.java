@@ -17,7 +17,11 @@ public class Channel {
 	public static final String ADD_TICKET1 = "ADD_TICKET1";
 	public static final String ADD_TICKET2 = "ADD_TICKET2";
 	public static final String REMOVE_TICKET = "REMOVE_TICKET";
+	public static final String CAN_BUY_TICKET = "CAN_BUY_TICKET";
+	public static final String RETURN_CAN_BUY_TICKET = "RETURN_CAN_BUY_TICKET";
 	public static final String BUY_TICKET = "BUY_TICKET";
+	public static final String CAN_SELL_TICKET = "CAN_SELL_TICKET";
+	public static final String RETURN_CAN_SELL_TICKET = "RETURN_CAN_SELL_TICKET";
 	public static final String SELL_TICKET = "SELL_TICKET";
 	public static final String GET_MEDIAN = "GET_MEDIAN";
 	public static final String RETURN_GET_MEDIAN = "RETURN_GET_MEDIAN";

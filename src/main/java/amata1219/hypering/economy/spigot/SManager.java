@@ -135,6 +135,24 @@ public class SManager implements Listener, PluginMessageListener, SHyperingEcono
 
 			callbackManager.done(seqId, new Result(number6));
 			break;
+		case Channel.RETURN_CAN_BUY_TICKET:
+			channel.read(stream);
+			if(channel.isNull())
+				return;
+
+			boolean can7 = Boolean.valueOf(channel.getMessage()).booleanValue();
+
+			callbackManager.done(seqId, new Result(can7));
+			break;
+		case Channel.RETURN_CAN_SELL_TICKET:
+			channel.read(stream);
+			if(channel.isNull())
+				return;
+
+			boolean can8 = Boolean.valueOf(channel.getMessage()).booleanValue();
+
+			callbackManager.done(seqId, new Result(can8));
+			break;
 		default:
 			break;
 		}
@@ -358,6 +376,18 @@ public class SManager implements Listener, PluginMessageListener, SHyperingEcono
 	public void getNumberOfPlayerDataLoaded(Player sender, Callback<Result> callback){
 		int seqId = callbackManager.send(callback);
 		send(sender, Util.toByteArray(Channel.GET_NUMBER_OF_PLAYER_DATA_LOADED, sender.getUniqueId().toString(), String.valueOf(seqId)));
+	}
+
+	@Override
+	public void canBuyTicket(Player sender, UUID uuid, long numberOfTickets, Callback<Result> callback) {
+		int seqId = callbackManager.send(callback);
+		send(sender, Util.toByteArray(Channel.HAS_MONEY, uuid.toString(), String.valueOf(numberOfTickets), String.valueOf(seqId)));
+	}
+
+	@Override
+	public void canSellTicket(Player sender, UUID uuid, long numberOfTickets, Callback<Result> callback) {
+		int seqId = callbackManager.send(callback);
+		send(sender, Util.toByteArray(Channel.HAS_MONEY, uuid.toString(), String.valueOf(numberOfTickets), String.valueOf(seqId)));
 	}
 
 }

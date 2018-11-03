@@ -354,6 +354,21 @@ public class BCManager implements Listener, BCHyperingEconomyAPI{
 
 			data.removeTicket(number11, save);
 			break;
+		case Channel.CAN_BUY_TICKET:
+			channel.read(stream);
+			if(channel.isNull())
+				return;
+
+			long number17 = Long.valueOf(channel.getMessage()).longValue();
+
+			channel.read(stream);
+			if(channel.isNull())
+				return;
+
+			String seqId17 = channel.getMessage();
+
+			server.sendData("BungeeCord", Util.toByteArray(Channel.RETURN_HAS_MONEY, seqId17, String.valueOf(data.getMoney(name) >= getTicketPrice(name) * number17)));
+			break;
 		case Channel.BUY_TICKET:
 			channel.read(stream);
 			if(channel.isNull())
@@ -362,6 +377,21 @@ public class BCManager implements Listener, BCHyperingEconomyAPI{
 			long number12 = Long.valueOf(channel.getMessage()).longValue();
 
 			data.buyTicket(name, number12, getTicketPrice(name), save);
+			break;
+		case Channel.CAN_SELL_TICKET:
+			channel.read(stream);
+			if(channel.isNull())
+				return;
+
+			long number18 = Long.valueOf(channel.getMessage()).longValue();
+
+			channel.read(stream);
+			if(channel.isNull())
+				return;
+
+			String seqId18 = channel.getMessage();
+
+			server.sendData("BungeeCord", Util.toByteArray(Channel.RETURN_HAS_MONEY, seqId18, String.valueOf(data.getTickets() >= number18)));
 			break;
 		case Channel.SELL_TICKET:
 			channel.read(stream);
@@ -468,6 +498,16 @@ public class BCManager implements Listener, BCHyperingEconomyAPI{
 	@Override
 	public void sellTicket(UUID uuid, ServerName where, long numberOfTickets){
 		getPlayerData(uuid).sellTicket(where, numberOfTickets, false);
+	}
+
+	@Override
+	public boolean canBuyTicket(UUID uuid, ServerName where, long numberOfTickets) {
+		return getPlayerData(uuid).getMoney(where) >= getTicketPrice(where) * numberOfTickets;
+	}
+
+	@Override
+	public boolean canSellTicket(UUID uuid, ServerName where, long numberOfTickets) {
+		return getPlayerData(uuid).getTickets() >= numberOfTickets;
 	}
 
 }
