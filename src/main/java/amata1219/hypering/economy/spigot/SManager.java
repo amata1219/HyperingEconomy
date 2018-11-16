@@ -381,13 +381,13 @@ public class SManager implements Listener, PluginMessageListener, SHyperingEcono
 	@Override
 	public void canBuyTicket(Player sender, UUID uuid, long numberOfTickets, Callback<Result> callback) {
 		int seqId = callbackManager.send(callback);
-		send(sender, Util.toByteArray(Channel.HAS_MONEY, uuid.toString(), String.valueOf(numberOfTickets), String.valueOf(seqId)));
+		send(sender, Util.toByteArray(Channel.CAN_BUY_TICKET, uuid.toString(), String.valueOf(numberOfTickets), String.valueOf(seqId)));
 	}
 
 	@Override
 	public void canSellTicket(Player sender, UUID uuid, long numberOfTickets, Callback<Result> callback) {
 		int seqId = callbackManager.send(callback);
-		send(sender, Util.toByteArray(Channel.HAS_MONEY, uuid.toString(), String.valueOf(numberOfTickets), String.valueOf(seqId)));
+		send(sender, Util.toByteArray(Channel.CAN_SELL_TICKET, uuid.toString(), String.valueOf(numberOfTickets), String.valueOf(seqId)));
 	}
 
 }

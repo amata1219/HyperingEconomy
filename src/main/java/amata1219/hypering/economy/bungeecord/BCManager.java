@@ -63,8 +63,10 @@ public class BCManager implements Listener, BCHyperingEconomyAPI{
 		loadPlayerDataOfOnlinePlayers();
 		loadWithinMonth();
 
-		for(ServerName name : ServerName.values())
+		for(ServerName name : ServerName.values()){
 			forCalc.put(name, new ArrayList<Long>());
+			median.put(name, 0L);
+		}
 	}
 
 	public static BCManager getManager(){
@@ -390,6 +392,8 @@ public class BCManager implements Listener, BCHyperingEconomyAPI{
 				return;
 
 			String seqId18 = channel.getMessage();
+
+			System.out.println("DEBUG CAN_SELL_TICKET(id#" + seqId18 + "): " + number18 + ", " + data.getTickets());
 
 			server.sendData("BungeeCord", Util.toByteArray(Channel.RETURN_HAS_MONEY, seqId18, String.valueOf(data.getTickets() >= number18)));
 			break;

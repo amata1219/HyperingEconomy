@@ -7,7 +7,7 @@ import java.util.UUID;
 
 import amata1219.hypering.economy.bungeecord.BCManager;
 
-public class PlayerData{
+public class PlayerData {
 
 	private UUID uuid;
 	private Map<ServerName, Long> money = new HashMap<>();
@@ -175,7 +175,7 @@ public class PlayerData{
 		tickets = tickets > getTickets() ? getTickets() : tickets;
 
 		for(long l = tickets; l > 0; l--){
-			setMoney(name, getMoney(name) - getAmountPerTicket(), false, false);
+			setMoney(name, getMoney(name) + (long) ((Float.valueOf(getAmountPerTicket()) / 10.0F) * 9.0F), false, false);
 			removeTicket(1, false);
 		}
 
