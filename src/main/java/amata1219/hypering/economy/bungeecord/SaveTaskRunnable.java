@@ -37,9 +37,9 @@ public class SaveTaskRunnable implements Runnable{
 	private void sort(){
 		List<PlayerData> list = MySQL.getAllPlayerData();
 		for(ServerName name : ServerName.values()){
+			list.sort(comparators.get(name));
 
-
-			PlayerData[] data = (PlayerData[]) MySQL.getAllPlayerData().toArray(new PlayerData[]{});
+			/*PlayerData[] data = (PlayerData[]) MySQL.getAllPlayerData().toArray(new PlayerData[]{});
 			for(int i = 0; i < data.length - 1; i++){
 				for(int j = 0; j < data.length - i - 1; j++){
 					if(data[j].getMoney(name) < data[j + 1].getMoney(name)){
@@ -48,21 +48,21 @@ public class SaveTaskRunnable implements Runnable{
 						data[j + 1] = asc;
 					}
 				}
-			}
-			BCManager.getManager().getMoneyRankingMap().put(name, normalize(name, data));
+			}*/
+
+			BCManager.getManager().getMoneyRankingMap().put(name, normalize(name, list));
 		}
 	}
 
-	private String normalize(ServerName name, PlayerData[] data){
-		if(data.length == 0)
-			return "";
+	private String normalize(ServerName name, List<PlayerData> list){
+		StringBuilder sb = new StringBuilder("");
 
-		StringBuilder sb = new StringBuilder();
-		for(PlayerData d : data)
-			sb.append("," + d.getUniqueId().toString() + "-" + d.getMoney(name));
+		list.forEach(data -> sb.append("," + data.getUniqueId().toString() + "-" + data.getMoney(name)));
 
+		/*for(PlayerData d : data)
+			sb.append("," + d.getUniqueId().toString() + "-" + d.getMoney(name));*/
 
-		return sb.substring(1);
+		return sb.toString().substring(1);
 	}
 
 }

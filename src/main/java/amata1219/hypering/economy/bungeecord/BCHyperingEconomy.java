@@ -52,6 +52,8 @@ public class BCHyperingEconomy extends Plugin{
 		getProxy().getPluginManager().registerListener(plugin, BCManager.getManager());
 
 		BCManager.getManager().startTaskRunnable();
+
+		getProxy().getPluginManager().registerCommand(this, new DebugCommand());
 	}
 
 	@Override
