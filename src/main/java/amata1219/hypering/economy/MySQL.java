@@ -212,6 +212,8 @@ public class MySQL {
 			e.printStackTrace();
 		}
 
+		System.out.println("within month: " + map.size());
+
 		return map;
 	}
 

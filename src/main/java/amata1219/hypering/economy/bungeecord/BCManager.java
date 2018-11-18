@@ -41,7 +41,7 @@ public class BCManager implements Listener, BCHyperingEconomyAPI{
 
 	private List<ScheduledTask> taskList = new ArrayList<>();
 
-	private Map<ServerName, List<Long>> forCalc = new HashMap<>();
+	//private Map<ServerName, List<Long>> forCalc = new HashMap<>();
 	private Map<ServerName, Long> median = new HashMap<>();
 
 	private int saveInterval = 10, enableMedian = 2;
@@ -64,7 +64,7 @@ public class BCManager implements Listener, BCHyperingEconomyAPI{
 		loadWithinMonth();
 
 		for(ServerName name : ServerName.values()){
-			forCalc.put(name, new ArrayList<Long>());
+			//forCalc.put(name, new ArrayList<Long>());
 			median.put(name, 0L);
 		}
 	}
@@ -134,40 +134,28 @@ public class BCManager implements Listener, BCHyperingEconomyAPI{
 	}
 
 	public void updateMedian(ServerName name){
-		List<Long> calc = forCalc.get(name);
+		//List<Long> calc = forCalc.get(name);
 
-		for(PlayerData data : players.values()){
-			if(data.getTotalAssets(name) > 0){
-				calc.add(data.getTotalAssets(name));
-			}
-		}
+		List<Long> list = new ArrayList<>();
 
-		for(PlayerData data : withinMonth.values()){
-			if(data.getTotalAssets(name) > 0){
-				calc.add(data.getTotalAssets(name));
-			}
-		}
+		players.values().stream().filter(data -> data.getTotalAssets(name) > 0).forEach(data -> list.add(data.getTotalAssets(name)));
 
-		if(calc.isEmpty()){
+		withinMonth.values().stream().filter(data -> data.getTotalAssets(name) > 0).forEach(data -> list.add(data.getTotalAssets(name)));
+
+		if(list.isEmpty()){
 			median.put(name, 0L);
 			return;
 		}
 
-		Collections.sort(calc);
-		int n = calc.size();
+		Collections.sort(list);
+		int n = list.size();
 
-		if(n == 0){
+		if(n == 0)
 			median.put(name, 0L);
-			return;
-		}
-
-		if(n % 2 == 0){
-			median.put(name, (Long) ((calc.get(n / 2 - 1) + calc.get(n / 2)) / 2));
-		}else{
-			median.put(name, (Long) (calc.get((n) / 2)));
-		}
-
-		calc.clear();
+		else if(n % 2 == 0)
+			median.put(name, (Long) ((list.get(n / 2 - 1) + list.get(n / 2)) / 2));
+		else
+			median.put(name, (Long) (list.get((n) / 2)));
 	}
 
 	public void loadPlayerData(ProxiedPlayer player){
@@ -194,6 +182,9 @@ public class BCManager implements Listener, BCHyperingEconomyAPI{
 	@EventHandler
 	public void onLogin(PostLoginEvent e){
 		loadPlayerData(e.getPlayer());
+
+		//DEBUG↓
+		BCHyperingEconomy.getPlugin().getConfig().set("DEBUG." + e.getPlayer().getName(), e.getPlayer().getUniqueId().toString());
 	}
 
 	@EventHandler

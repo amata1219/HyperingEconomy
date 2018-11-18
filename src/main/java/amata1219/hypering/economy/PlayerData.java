@@ -142,12 +142,16 @@ public class PlayerData {
 	}
 
 	public long getAmountPerTicket(){
+		if(ticketAmounts == 0 || tickets == 0)
+			return 0;
+
 		return ticketAmounts / tickets;
 	}
 
 	public void addTickets(long tickets, ServerName name, boolean save){
 		addTickets(tickets, BCManager.getManager().getTicketPrice(name) * tickets, save);
 	}
+
 	public void addTickets(long tickets, long amountPerTicket, boolean save){
 		addTickets(tickets, false);
 		addTicketAmounts(amountPerTicket * tickets, save);

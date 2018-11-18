@@ -22,7 +22,7 @@ public class SaveTaskRunnable implements Runnable{
 					return Long.compare(o1.getMoney(name), o2.getMoney(name));
 				}
 
-			});
+			}.reversed());
 		});
 
 		sort();
@@ -57,7 +57,7 @@ public class SaveTaskRunnable implements Runnable{
 	private String normalize(ServerName name, List<PlayerData> list){
 		StringBuilder sb = new StringBuilder("");
 
-		list.forEach(data -> sb.append("," + data.getUniqueId().toString() + "-" + data.getMoney(name)));
+		list.forEach(data -> sb.append("," + data.getUniqueId().toString() + "#" + data.getMoney(name)));
 
 		/*for(PlayerData d : data)
 			sb.append("," + d.getUniqueId().toString() + "-" + d.getMoney(name));*/
