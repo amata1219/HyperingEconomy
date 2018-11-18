@@ -99,6 +99,15 @@ public class SManager implements Listener, PluginMessageListener, SHyperingEcono
 
 			callbackManager.done(seqId, new Result(has2));
 			break;
+		case Channel.RETURN_MONEY_RANKING:
+			channel.read(stream);
+			if(channel.isNull())
+				return;
+
+			String text9 = channel.getMessage();
+
+			callbackManager.done(seqId, new Result(text9));
+			break;
 		case Channel.RETURN_GET_TICKETS:
 			channel.read(stream);
 			if(channel.isNull())

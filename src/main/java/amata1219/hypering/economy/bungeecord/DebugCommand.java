@@ -150,7 +150,7 @@ public class DebugCommand extends Command {
 				number = 10;
 			}else{
 				try{
-					number = Integer.valueOf(args[4]);
+					number = Integer.valueOf(args[1]);
 				}catch(NumberFormatException e){
 					send(sender, "/admin top [number]");
 					return;

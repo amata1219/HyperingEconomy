@@ -217,14 +217,13 @@ public class BCManager implements Listener, BCHyperingEconomyAPI{
 		UUID uuid = UUID.fromString(channel.getMessage());
 
 		PlayerData data = getPlayerData(uuid);
-		if(data == null)
-			data = MySQL.getPlayerData(uuid);
 
 		boolean save = false;
-		if(data == null)
-			return;
-		else
+
+		if(data == null){
+			data = MySQL.getPlayerData(uuid);
 			save = true;
+		}
 
 		ServerInfo server = BCHyperingEconomy.getPlugin().getProxy().getPlayer(uuid).getServer().getInfo();
 		ServerName name = ServerName.valueOf(server.getName());
@@ -383,8 +382,6 @@ public class BCManager implements Listener, BCHyperingEconomyAPI{
 				return;
 
 			String seqId18 = channel.getMessage();
-
-			System.out.println("DEBUG CAN_SELL_TICKET(id#" + seqId18 + "): " + number18 + ", " + data.getTickets());
 
 			server.sendData("BungeeCord", Util.toByteArray(Channel.RETURN_HAS_MONEY, seqId18, String.valueOf(data.getTickets() >= number18)));
 			break;
