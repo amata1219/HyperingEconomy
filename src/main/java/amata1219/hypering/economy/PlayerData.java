@@ -66,7 +66,15 @@ public class PlayerData {
 	}
 
 	public void addMoney(ServerName name, long money, boolean save){
-		setMoney(name, getMoney(name) + money, true, save);
+		long l = 0;
+
+		try{
+			l = getMoney(name) + money;
+		}catch(Exception e){
+			l = Long.MAX_VALUE;
+		}
+
+		setMoney(name, l, true, save);
 	}
 
 	public void removeMoney(ServerName name, long money, boolean save){
@@ -103,7 +111,11 @@ public class PlayerData {
 	}
 
 	public void addTickets(long tickets, boolean save){
-		this.tickets += tickets;
+		try{
+			this.tickets += tickets;
+		}catch(Exception e){
+			this.tickets = Long.MAX_VALUE;
+		}
 
 		if(save)
 			save();
@@ -128,7 +140,11 @@ public class PlayerData {
 	}
 
 	public void addTicketAmounts(long ticketAmounts, boolean save){
-		this.ticketAmounts += ticketAmounts;
+		try{
+			this.ticketAmounts += ticketAmounts;
+		}catch(Exception e){
+			this.ticketAmounts = Long.MAX_VALUE;
+		}
 
 		if(save)
 			save();
