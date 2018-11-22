@@ -94,49 +94,6 @@ public class DebugCommand extends Command {
 					send(sender, args[3] + " の所持金から ¥" + money + " 削除しました。");
 					return;
 				}
-			}else if(args[1].equalsIgnoreCase("ticket")){
-				if(args.length == 2){
-					send(sender, "/admin d ticket [add/remove/see] [player]");
-					return;
-				}else if(args.length == 3){
-					send(sender, "/admin d ticket [add/remove/see] [player]");
-					return;
-				}
-
-				PlayerData data = getPlayerData(args[3]);
-				if(data == null){
-					send(sender, "指定されたプレイヤーは存在しません");
-					return;
-				}
-
-				if(args[2].equalsIgnoreCase("see")){
-					send(sender, args[3] + " の所持チケットは " + data.getTickets() + "枚 です。");
-					return;
-				}
-
-				if(args.length == 4){
-					send(sender, "/admin d ticket [add/remove] [player] [money]");
-					return;
-				}
-
-				long tickets = 0;
-
-				try{
-					tickets = Long.valueOf(args[4]);
-				}catch(NumberFormatException e){
-					send(sender, "/admin d ticket [add/remove] [player] [money]");
-					return;
-				}
-
-				if(args[2].equalsIgnoreCase("add")){
-					data.addTickets(tickets, true);
-					send(sender, args[3] + " の所持チケットに " + tickets + "枚 追加しました。");
-					return;
-				}else if(args[2].equalsIgnoreCase("remove")){
-					data.removeTickets(tickets, true);
-					send(sender, args[3] + " の所持チケットから " + tickets + "枚 削除しました。");
-					return;
-				}
 			}else if(args[1].equalsIgnoreCase("median")){
 				send(sender, name.toString() + ": " + BCManager.getManager().getMedian(name));
 				return;

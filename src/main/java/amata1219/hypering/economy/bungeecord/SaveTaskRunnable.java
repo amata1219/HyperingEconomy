@@ -56,6 +56,8 @@ public class SaveTaskRunnable implements Runnable{
 
 	private String normalize(ServerName name, List<PlayerData> list){
 		StringBuilder sb = new StringBuilder("");
+		if(list.isEmpty())
+			return "";
 
 		list.forEach(data -> sb.append("," + data.getUniqueId().toString() + "#" + data.getMoney(name)));
 
