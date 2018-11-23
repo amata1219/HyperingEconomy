@@ -96,7 +96,7 @@ public class PlayerData {
 	}
 
 	public String toMoneyText(){
-		return getMoney(ServerName.main) + "," + getMoney(ServerName.lgw) + "," + getMoney(ServerName.silopvp) + "," + getMoney(ServerName.rpg) + "," + getMoney(ServerName.pata) + "," + getMoney(ServerName.p) + "," + getMoney(ServerName.athletic) + "," + getMoney(ServerName.event) + "," + getMoney(ServerName.minigame);
+		return getMoney(ServerName.main) + "," + getMoney(ServerName.pata);
 	}
 
 	public long getTickets(){

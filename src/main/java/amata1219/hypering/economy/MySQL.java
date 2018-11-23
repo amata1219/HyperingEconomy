@@ -17,7 +17,7 @@ public class MySQL {
 
 	//uuid char(36) playerdata text
 	//create database HyperingEconomyDatabase character set utf8 collate utf8_general_ci;
-	//create table hyperingeconomydatabase.playerdata(uuid varchar(36), last bigint, tickets bigint, ticketamounts bigint, main bigint, lgw bigint, silopvp bigint, rpg bigint, pata bigint, p bigint, athletic bigint, event bigint, minigame bigint);
+	//create table hyperingeconomydatabase.playerdata(uuid varchar(36), last bigint, tickets bigint, ticketamounts bigint, main bigint, pata bigint);
 	//2592000000
 	private static MySQL mysql;
 
@@ -96,7 +96,7 @@ public class MySQL {
 
 		if(exist == 1){
 			try(Connection con = hikari.getConnection();
-					PreparedStatement statement = con.prepareStatement("SELECT tickets, ticketamounts, main, lgw, silopvp, rpg, pata, p, athletic, event, minigame FROM " + database + "." + table + " WHERE uuid=?")){
+					PreparedStatement statement = con.prepareStatement("SELECT tickets, ticketamounts, main, pata FROM " + database + "." + table + " WHERE uuid=?")){
 					statement.setString(1, id);
 
 				try(ResultSet result = statement.executeQuery()){
@@ -104,14 +104,7 @@ public class MySQL {
 						Map<ServerName, Long> money = new HashMap<>();
 
 						money.put(ServerName.main, result.getLong("main"));
-						money.put(ServerName.lgw, result.getLong("lgw"));
-						money.put(ServerName.silopvp, result.getLong("silopvp"));
-						money.put(ServerName.rpg, result.getLong("rpg"));
 						money.put(ServerName.pata, result.getLong("pata"));
-						money.put(ServerName.p, result.getLong("p"));
-						money.put(ServerName.athletic, result.getLong("athletic"));
-						money.put(ServerName.event, result.getLong("event"));
-						money.put(ServerName.minigame, result.getLong("minigame"));
 
 						data = PlayerData.load(uuid, money, result.getLong("tickets"), result.getLong("ticketamounts"));
 
@@ -139,22 +132,14 @@ public class MySQL {
 	public static List<PlayerData> getAllPlayerData(){
 		List<PlayerData> list = new ArrayList<>();
 		try(Connection con = hikari.getConnection();
-				PreparedStatement statement = con.prepareStatement("SELECT uuid, tickets, ticketamounts, main, lgw, silopvp, rpg, pata, p, athletic, event, minigame FROM " + database + "." + table)){
+				PreparedStatement statement = con.prepareStatement("SELECT uuid, tickets, ticketamounts, main, pata FROM " + database + "." + table)){
 
 			try(ResultSet result = statement.executeQuery()){
 				while(result.next()){
 					Map<ServerName, Long> money = new HashMap<>();
 
 					money.put(ServerName.main, result.getLong("main"));
-					money.put(ServerName.lgw, result.getLong("lgw"));
-					money.put(ServerName.silopvp, result.getLong("silopvp"));
-					money.put(ServerName.rpg, result.getLong("rpg"));
 					money.put(ServerName.pata, result.getLong("pata"));
-					money.put(ServerName.p, result.getLong("p"));
-					money.put(ServerName.athletic, result.getLong("athletic"));
-					money.put(ServerName.event, result.getLong("event"));
-					money.put(ServerName.minigame, result.getLong("minigame"));
-
 					list.add(PlayerData.load(UUID.fromString(result.getString("uuid")), money, result.getLong("tickets"), result.getLong("ticketamounts")));
 				}
 
@@ -169,10 +154,7 @@ public class MySQL {
 
 	public static boolean savePlayerData(PlayerData data){
 		return putCommand("UPDATE " + database + "." + table + " SET tickets = " + data.getTickets() + ",ticketamounts = "
-				+ data.getTicketAmounts() + ",main = " + data.getMoney(ServerName.main) + ",lgw = " + data.getMoney(ServerName.lgw)
-				+ ",silopvp = " + data.getMoney(ServerName.silopvp) + ",rpg = " + data.getMoney(ServerName.rpg) + ",pata = " + data.getMoney(ServerName.pata)
-				+ ",p = " + data.getMoney(ServerName.p) + ",athletic = " + data.getMoney(ServerName.athletic) + ",event = " + data.getMoney(ServerName.event)
-				+ ",minigame = " + data.getMoney(ServerName.minigame) + " WHERE uuid=?", data.getUniqueId().toString());
+				+ data.getTicketAmounts() + ",main = " + data.getMoney(ServerName.main) + ",pata = " + data.getMoney(ServerName.pata) + " WHERE uuid=?", data.getUniqueId().toString());
 	}
 
 	public static boolean saveLastLogined(PlayerData data){
@@ -183,7 +165,7 @@ public class MySQL {
 		Map<UUID, PlayerData> map = new HashMap<>();
 
 		try(Connection con = hikari.getConnection();
-				PreparedStatement statement = con.prepareStatement("SELECT uuid, last, tickets, ticketamounts, main, lgw, silopvp, rpg, pata, p, athletic, event, minigame FROM " + database + "." + table)){
+				PreparedStatement statement = con.prepareStatement("SELECT uuid, last, tickets, ticketamounts, main, pata FROM " + database + "." + table)){
 
 			try(ResultSet result = statement.executeQuery()){
 				while(result.next()){
@@ -191,14 +173,7 @@ public class MySQL {
 						Map<ServerName, Long> money = new HashMap<>();
 
 						money.put(ServerName.main, result.getLong("main"));
-						money.put(ServerName.lgw, result.getLong("lgw"));
-						money.put(ServerName.silopvp, result.getLong("silopvp"));
-						money.put(ServerName.rpg, result.getLong("rpg"));
 						money.put(ServerName.pata, result.getLong("pata"));
-						money.put(ServerName.p, result.getLong("p"));
-						money.put(ServerName.athletic, result.getLong("athletic"));
-						money.put(ServerName.event, result.getLong("event"));
-						money.put(ServerName.minigame, result.getLong("minigame"));
 
 						UUID uuid = UUID.fromString(result.getString("uuid"));
 
@@ -211,8 +186,6 @@ public class MySQL {
 		}catch(SQLException e){
 			e.printStackTrace();
 		}
-
-		System.out.println("within month: " + map.size());
 
 		return map;
 	}

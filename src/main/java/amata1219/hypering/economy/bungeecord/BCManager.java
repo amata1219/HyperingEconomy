@@ -26,22 +26,15 @@ import net.md_5.bungee.api.scheduler.ScheduledTask;
 import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.event.EventHandler;
 
-public class BCManager implements Listener, BCHyperingEconomyAPI{
-
-	/*
-	 * メインフラット、買った土地に建物を建ててから転売が出来るのと、運営に売却して買った時のチケットをもらってフラットに出来る機能
-	 */
-
+public class BCManager implements Listener, BCHyperingEconomyAPI {
 	private static BCManager manager;
 
-	private Map<UUID, PlayerData> players = new HashMap<>();
-	private Map<UUID, PlayerData> withinMonth = new HashMap<>();
+	private Map<UUID, PlayerData> players = new HashMap<>(), withinMonth = new HashMap<>();
 
 	private Map<ServerName, String> money_rankings = new HashMap<>();
 
 	private List<ScheduledTask> taskList = new ArrayList<>();
 
-	//private Map<ServerName, List<Long>> forCalc = new HashMap<>();
 	private Map<ServerName, Long> median = new HashMap<>();
 
 	private int saveInterval = 10, enableMedian = 2;
@@ -64,8 +57,9 @@ public class BCManager implements Listener, BCHyperingEconomyAPI{
 		loadWithinMonth();
 
 		for(ServerName name : ServerName.values()){
-			//forCalc.put(name, new ArrayList<Long>());
 			median.put(name, 0L);
+
+			updateMedian(name);
 		}
 	}
 
@@ -134,8 +128,6 @@ public class BCManager implements Listener, BCHyperingEconomyAPI{
 	}
 
 	public void updateMedian(ServerName name){
-		//List<Long> calc = forCalc.get(name);
-
 		List<Long> list = new ArrayList<>();
 
 		players.values().stream().filter(data -> data.getTotalAssets(name) > 0).forEach(data -> list.add(data.getTotalAssets(name)));

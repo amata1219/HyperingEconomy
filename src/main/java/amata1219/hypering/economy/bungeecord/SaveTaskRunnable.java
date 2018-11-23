@@ -39,17 +39,6 @@ public class SaveTaskRunnable implements Runnable{
 		for(ServerName name : ServerName.values()){
 			list.sort(comparators.get(name));
 
-			/*PlayerData[] data = (PlayerData[]) MySQL.getAllPlayerData().toArray(new PlayerData[]{});
-			for(int i = 0; i < data.length - 1; i++){
-				for(int j = 0; j < data.length - i - 1; j++){
-					if(data[j].getMoney(name) < data[j + 1].getMoney(name)){
-						PlayerData asc = data[j];
-						data[j] = data[j + 1];
-						data[j + 1] = asc;
-					}
-				}
-			}*/
-
 			BCManager.getManager().getMoneyRankingMap().put(name, normalize(name, list));
 		}
 	}
@@ -60,9 +49,6 @@ public class SaveTaskRunnable implements Runnable{
 			return "";
 
 		list.forEach(data -> sb.append("," + data.getUniqueId().toString() + "#" + data.getMoney(name)));
-
-		/*for(PlayerData d : data)
-			sb.append("," + d.getUniqueId().toString() + "-" + d.getMoney(name));*/
 
 		return sb.toString().substring(1);
 	}
