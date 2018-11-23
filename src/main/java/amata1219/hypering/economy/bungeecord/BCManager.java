@@ -2,6 +2,8 @@ package amata1219.hypering.economy.bungeecord;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -24,6 +26,8 @@ import net.md_5.bungee.api.event.ServerDisconnectEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.scheduler.ScheduledTask;
 import net.md_5.bungee.config.Configuration;
+import net.md_5.bungee.config.ConfigurationProvider;
+import net.md_5.bungee.config.YamlConfiguration;
 import net.md_5.bungee.event.EventHandler;
 
 public class BCManager implements Listener, BCHyperingEconomyAPI {
@@ -177,6 +181,11 @@ public class BCManager implements Listener, BCHyperingEconomyAPI {
 
 		//DEBUG↓
 		BCHyperingEconomy.getPlugin().getConfig().set("DEBUG." + e.getPlayer().getName(), e.getPlayer().getUniqueId().toString());
+		try {
+			ConfigurationProvider.getProvider(YamlConfiguration.class).save(BCHyperingEconomy.getPlugin().getConfig(), new File(BCHyperingEconomy.getPlugin().getDataFolder(), "bcside_config.yml"));
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
 	}
 
 	@EventHandler
