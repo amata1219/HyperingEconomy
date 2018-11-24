@@ -19,6 +19,7 @@ public class MySQL {
 	//create database HyperingEconomyDatabase character set utf8 collate utf8_general_ci;
 	//create table hyperingeconomydatabase.playerdata(uuid varchar(36), last bigint, tickets bigint, ticketamounts bigint, main bigint, pata bigint);
 	//2592000000
+
 	private static MySQL mysql;
 
 	private static HikariDataSource hikari;
@@ -59,12 +60,9 @@ public class MySQL {
 			hikari.close();
 	}
 
-	public static boolean putCommand(String command, String substitution){
+	public static boolean putCommand(String command){
 		try(Connection con = hikari.getConnection();
 				PreparedStatement statement = con.prepareStatement(command)){
-				if(substitution != null)
-					statement.setString(1, substitution);
-
 			statement.executeUpdate();
 		}catch(SQLException e){
 			e.printStackTrace();
@@ -121,7 +119,7 @@ public class MySQL {
 			data = new PlayerData(uuid);
 
 			putCommand("INSERT INTO " + database + "." + table + " VALUES ('" + uuid.toString()+ "'," + System.currentTimeMillis()
-			+ "," + data.getTickets() + "," + data.getTicketAmounts() + "," + data.toMoneyText() + ")", null);
+			+ "," + data.getTickets() + "," + data.getTicketAmounts() + "," + data.toMoneyText() + ")");
 
 			return data;
 		}
@@ -154,14 +152,14 @@ public class MySQL {
 
 	public static boolean savePlayerData(PlayerData data){
 		return putCommand("UPDATE " + database + "." + table + " SET tickets = " + data.getTickets() + ",ticketamounts = "
-				+ data.getTicketAmounts() + ",main = " + data.getMoney(ServerName.main) + ",pata = " + data.getMoney(ServerName.pata) + " WHERE uuid=?", data.getUniqueId().toString());
+				+ data.getTicketAmounts() + ",main = " + data.getMoney(ServerName.main) + ",pata = " + data.getMoney(ServerName.pata) + " WHERE uuid='" + data.getUniqueId().toString() + "'");
 	}
 
 	public static boolean saveLastLogined(PlayerData data){
-		return putCommand("UPDATE " + database + "." + table + " SET last = " + System.currentTimeMillis() + " WHERE uuid=?", data.getUniqueId().toString());
+		return putCommand("UPDATE " + database + "." + table + " SET last = " + System.currentTimeMillis() + " WHERE uuid='" + data.getUniqueId().toString() + "'");
 	}
 
-	public static Map<UUID, PlayerData> getWithinMonth(){
+	public static Map<UUID, PlayerData> getOfflinePlayerDataWithinMonth(){
 		Map<UUID, PlayerData> map = new HashMap<>();
 
 		try(Connection con = hikari.getConnection();
@@ -190,7 +188,7 @@ public class MySQL {
 		return map;
 	}
 
-	public static boolean isOverOneMonth(UUID uuid){
+	public static boolean isOver(UUID uuid){
 		long last = 0;
 		try(Connection con = hikari.getConnection();
 				PreparedStatement statement = con.prepareStatement("SELECT last FROM " + database + "." + table + " WHERE uuid=?")){

@@ -20,7 +20,7 @@ import amata1219.hypering.economy.callback.Callback;
 import amata1219.hypering.economy.callback.CallbackManager;
 import amata1219.hypering.economy.callback.Result;
 
-public class SManager implements Listener, PluginMessageListener, SHyperingEconomyAPI{
+public class SManager implements Listener, PluginMessageListener, SHyperingEconomyAPI {
 
 	private static SManager manager;
 
@@ -65,99 +65,66 @@ public class SManager implements Listener, PluginMessageListener, SHyperingEcono
 		HyperingEconomyChannel channel = HyperingEconomyChannel.newInstance(stream);
 
 		channel.read(stream);
-		if(channel.isNull() || !channel.getMessage().equals(HyperingEconomyChannel.PACKET_ID))
+		if(!channel.getMessage().equals(HyperingEconomyChannel.PACKET_ID))
 			return;
 
 		channel.read(stream);
-		if(channel.isNull())
-			return;
-
 		String sub = channel.getMessage();
 
 		channel.read(stream);
-		if(channel.isNull())
-			return;
-
 		int seqId = Integer.valueOf(channel.getMessage()).intValue();
 
 		switch(sub){
 		case Channel.RETURN_GET_MONEY:
 			channel.read(stream);
-			if(channel.isNull())
-				return;
-
 			long money1 = Long.valueOf(channel.getMessage()).longValue();
 
 			callbackManager.done(seqId, new Result(money1));
 			break;
 		case Channel.RETURN_HAS_MONEY:
 			channel.read(stream);
-			if(channel.isNull())
-				return;
-
 			boolean has2 = Boolean.valueOf(channel.getMessage()).booleanValue();
 
 			callbackManager.done(seqId, new Result(has2));
 			break;
 		case Channel.RETURN_MONEY_RANKING:
 			channel.read(stream);
-			if(channel.isNull())
-				return;
-
 			String text9 = channel.getMessage();
 
 			callbackManager.done(seqId, new Result(text9));
 			break;
 		case Channel.RETURN_GET_TICKETS:
 			channel.read(stream);
-			if(channel.isNull())
-				return;
-
 			long number3 = Long.valueOf(channel.getMessage()).longValue();
 
 			callbackManager.done(seqId, new Result(number3));
 			break;
 		case Channel.RETURN_GET_MEDIAN:
 			channel.read(stream);
-			if(channel.isNull())
-				return;
-
 			long median4 = Long.valueOf(channel.getMessage()).longValue();
 
 			callbackManager.done(seqId, new Result(median4));
 			break;
 		case Channel.RETURN_GET_TICKET_PRICE:
 			channel.read(stream);
-			if(channel.isNull())
-				return;
-
 			long price5 = Long.valueOf(channel.getMessage()).longValue();
 
 			callbackManager.done(seqId, new Result(price5));
 			break;
 		case Channel.RETURN_GET_NUMBER_OF_PLAYER_DATA_LOADED:
 			channel.read(stream);
-			if(channel.isNull())
-				return;
-
 			long number6 = Long.valueOf(channel.getMessage()).longValue();
 
 			callbackManager.done(seqId, new Result(number6));
 			break;
 		case Channel.RETURN_CAN_BUY_TICKET:
 			channel.read(stream);
-			if(channel.isNull())
-				return;
-
 			boolean can7 = Boolean.valueOf(channel.getMessage()).booleanValue();
 
 			callbackManager.done(seqId, new Result(can7));
 			break;
 		case Channel.RETURN_CAN_SELL_TICKET:
 			channel.read(stream);
-			if(channel.isNull())
-				return;
-
 			boolean can8 = Boolean.valueOf(channel.getMessage()).booleanValue();
 
 			callbackManager.done(seqId, new Result(can8));

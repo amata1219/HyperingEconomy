@@ -100,6 +100,9 @@ public class DebugCommand extends Command {
 			}else if(args[1].equalsIgnoreCase("ticketprice")){
 				send(sender, name.toString() + ": " + BCManager.getManager().getTicketPrice(name));
 				return;
+			}else if(args[1].equalsIgnoreCase("update")){
+				BCManager.getManager().updateMedian(name);
+				return;
 			}
 		}else if(args[0].equalsIgnoreCase("top")){
 			int number = 0;
@@ -129,16 +132,16 @@ public class DebugCommand extends Command {
 			send(sender, "#Online(" + BCManager.getManager().getPlayerDataMap().keySet().size() + ")");
 			BCManager.getManager().getPlayerDataMap().keySet().forEach(k -> send(sender, toName(k.toString())));
 			send(sender, "");
-			send(sender, "#WithinMonth(" + BCManager.getManager().getWithinMonthMap().keySet().size() + ")");
-			BCManager.getManager().getWithinMonthMap().keySet().forEach(k -> send(sender, toName(k.toString())));
+			send(sender, "#Offline(" + BCManager.getManager().getOfflinePlayerDataMap().keySet().size() + ")");
+			BCManager.getManager().getOfflinePlayerDataMap().keySet().forEach(k -> send(sender, toName(k.toString())));
 		}else if(args[0].equalsIgnoreCase("all")){
 			send(sender, "プレイヤー名: 所持金, チケット, チケットの価値, 1枚当たりの価値");
 			send(sender, "");
 			send(sender, "#Online(" + BCManager.getManager().getPlayerDataMap().keySet().size() + ")");
 			BCManager.getManager().getPlayerDataMap().forEach((k, v) -> send(sender, toName(k.toString()) + ": ¥" + v.getMoney(name) + ", " + v.getTickets() + "枚, ¥" + v.getTicketAmounts() + ", ¥" + v.getAmountPerTicket()));
 			send(sender, "");
-			send(sender, "#WithinMonth(" + BCManager.getManager().getWithinMonthMap().keySet().size() + ")");
-			BCManager.getManager().getWithinMonthMap().forEach((k, v) -> send(sender, toName(k.toString()) + ": ¥" + v.getMoney(name) + ", " + v.getTickets() + "枚, ¥" + v.getTicketAmounts() + ", ¥" + v.getAmountPerTicket()));
+			send(sender, "#Offline(" + BCManager.getManager().getOfflinePlayerDataMap().keySet().size() + ")");
+			BCManager.getManager().getOfflinePlayerDataMap().forEach((k, v) -> send(sender, toName(k.toString()) + ": ¥" + v.getMoney(name) + ", " + v.getTickets() + "枚, ¥" + v.getTicketAmounts() + ", ¥" + v.getAmountPerTicket()));
 		}else if(args[0].equalsIgnoreCase("name")){
 			send(sender, "ServerName: " + name);
 		}
@@ -170,8 +173,11 @@ public class DebugCommand extends Command {
 			return null;
 
 		PlayerData data = BCManager.getManager().getPlayerData(uuid);
+		if(data != null)
+			System.out.println("get playerdata from map");
+
 		if(data == null)
-			data = MySQL.getPlayerData(uuid);
+			throw new NullPointerException("playerdata is null");
 
 		return data;
 	}

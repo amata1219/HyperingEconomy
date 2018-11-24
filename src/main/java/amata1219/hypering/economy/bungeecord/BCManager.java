@@ -5,7 +5,7 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,11 +31,13 @@ import net.md_5.bungee.config.YamlConfiguration;
 import net.md_5.bungee.event.EventHandler;
 
 public class BCManager implements Listener, BCHyperingEconomyAPI {
+
 	private static BCManager manager;
 
-	private Map<UUID, PlayerData> players = new HashMap<>(), withinMonth = new HashMap<>();
+	private Map<UUID, PlayerData> players = new HashMap<>(), offlinePlayers = new HashMap<>();
+	//オフラインの対象は1ヶ月以内にログインしたプレイヤーのみ
 
-	private Map<ServerName, String> money_rankings = new HashMap<>();
+	private Map<ServerName, String> moneyRankings = new HashMap<>();
 
 	private List<ScheduledTask> taskList = new ArrayList<>();
 
@@ -57,14 +59,16 @@ public class BCManager implements Listener, BCHyperingEconomyAPI {
 
 		initialPossesionMoney = config.getLong("InitialPossessionMoney");
 
-		loadPlayerDataOfOnlinePlayers();
-		loadWithinMonth();
+		loadOnlinePlayers();
+		loadOfflinePlayers();
 
 		for(ServerName name : ServerName.values()){
 			median.put(name, 0L);
 
 			updateMedian(name);
 		}
+
+		startTaskRunnable();
 	}
 
 	public static BCManager getManager(){
@@ -73,25 +77,19 @@ public class BCManager implements Listener, BCHyperingEconomyAPI {
 
 	@Override
 	public PlayerData getPlayerData(UUID uuid){
-		if(players.containsKey(uuid))
-			return players.get(uuid);
-
-		if(withinMonth.containsKey(uuid))
-			return withinMonth.get(uuid);
-
-		return null;
+		return players.containsKey(uuid) ? players.get(uuid) : offlinePlayers.get(uuid);
 	}
 
 	public Map<UUID, PlayerData> getPlayerDataMap(){
 		return players;
 	}
 
-	public Map<UUID, PlayerData> getWithinMonthMap(){
-		return withinMonth;
+	public Map<UUID, PlayerData> getOfflinePlayerDataMap(){
+		return offlinePlayers;
 	}
 
 	public Map<ServerName, String> getMoneyRankingMap(){
-		return money_rankings;
+		return moneyRankings;
 	}
 
 	public void startTaskRunnable(){
@@ -102,15 +100,15 @@ public class BCManager implements Listener, BCHyperingEconomyAPI {
 		taskList.forEach(task -> task.cancel());
 	}
 
-	public void loadPlayerDataOfOnlinePlayers(){
+	public void loadOnlinePlayers(){
 		BCHyperingEconomy.getPlugin().getProxy().getPlayers().forEach(player ->{
 			UUID uuid = player.getUniqueId();
 			players.put(uuid, MySQL.getPlayerData(uuid));
 		});
 	}
 
-	public void loadWithinMonth(){
-		withinMonth = MySQL.getWithinMonth();
+	public void loadOfflinePlayers(){
+		offlinePlayers = MySQL.getOfflinePlayerDataWithinMonth();
 	}
 
 	public long getTicketPrice(ServerName name){
@@ -128,51 +126,66 @@ public class BCManager implements Listener, BCHyperingEconomyAPI {
 	}
 
 	public int getNumberOfPlayerDataLoaded(){
-		return players.size() + withinMonth.size();
+		return players.size() + offlinePlayers.size();
 	}
 
+	private List<Long> calculate = new ArrayList<>();
+
 	public void updateMedian(ServerName name){
-		List<Long> list = new ArrayList<>();
+		calculate.clear();
 
-		players.values().stream().filter(data -> data.getTotalAssets(name) > 0).forEach(data -> list.add(data.getTotalAssets(name)));
+		for(PlayerData data : players.values()){
+			if(data.isNothingTotalAssets(name))
+				continue;
 
-		withinMonth.values().stream().filter(data -> data.getTotalAssets(name) > 0).forEach(data -> list.add(data.getTotalAssets(name)));
-
-		if(list.isEmpty()){
-			median.put(name, 0L);
-			return;
+			calculate.add(data.getTotalAssets(name));
 		}
 
-		Collections.sort(list);
-		int n = list.size();
+		for(PlayerData data : offlinePlayers.values()){
+			if(data.isNothingTotalAssets(name))
+				continue;
+
+			calculate.add(data.getTotalAssets(name));
+		}
+
+		calculate.sort(Comparator.reverseOrder());
+
+		int n = calculate.size();
 
 		if(n == 0)
 			median.put(name, 0L);
 		else if(n % 2 == 0)
-			median.put(name, (Long) ((list.get(n / 2 - 1) + list.get(n / 2)) / 2));
+			median.put(name, (Long) calculate.get(n / 2));
 		else
-			median.put(name, (Long) (list.get((n) / 2)));
+			median.put(name, (Long) calculate.get((n) / 2));
 	}
 
 	public void loadPlayerData(ProxiedPlayer player){
 		UUID uuid = player.getUniqueId();
 
-		PlayerData data = MySQL.getPlayerData(uuid);
+		PlayerData data = null;
+
+		if(offlinePlayers.containsKey(uuid)){
+			data = offlinePlayers.get(uuid);
+
+			offlinePlayers.remove(uuid);
+		}else{
+			data = MySQL.getPlayerData(uuid);
+		}
+
 		MySQL.saveLastLogined(data);
 
-		if(withinMonth.containsKey(uuid)){
-			withinMonth.get(uuid).save();
-			withinMonth.remove(uuid);
-		}
 		players.put(uuid, data);
 	}
 
 	public void unloadPlayerData(ProxiedPlayer player){
 		UUID uuid = player.getUniqueId();
+
 		PlayerData data = players.get(uuid);
 		data.save();
+
 		players.remove(uuid);
-		withinMonth.put(uuid, data);
+		offlinePlayers.put(uuid, data);
 	}
 
 	@EventHandler
@@ -202,19 +215,13 @@ public class BCManager implements Listener, BCHyperingEconomyAPI {
 		HyperingEconomyChannel channel = HyperingEconomyChannel.newInstance(stream);
 
 		channel.read(stream);
-		if(channel.isNull() || !channel.getMessage().equals(HyperingEconomyChannel.PACKET_ID))
+		if(!channel.getMessage().equals(HyperingEconomyChannel.PACKET_ID))
 			return;
 
 		channel.read(stream);
-		if(channel.isNull())
-			return;
-
 		String sub = channel.getMessage();
 
 		channel.read(stream);
-		if(channel.isNull())
-			return;
-
 		UUID uuid = UUID.fromString(channel.getMessage());
 
 		PlayerData data = getPlayerData(uuid);
@@ -232,192 +239,123 @@ public class BCManager implements Listener, BCHyperingEconomyAPI {
 		switch(sub){
 		case Channel.GET_MONEY:
 			channel.read(stream);
-			if(channel.isNull())
-				return;
-
 			String seqId1 = channel.getMessage();
 
 			server.sendData("BungeeCord", Util.toByteArray(Channel.RETURN_GET_MONEY, seqId1, String.valueOf(data.getMoney(name))));
 			break;
 		case Channel.HAS_MONEY:
 			channel.read(stream);
-			if(channel.isNull())
-				return;
-
 			long threshold = Long.valueOf(channel.getMessage()).longValue();
 
 			channel.read(stream);
-			if(channel.isNull())
-				return;
-
 			String seqId2 = channel.getMessage();
 
 			server.sendData("BungeeCord", Util.toByteArray(Channel.RETURN_HAS_MONEY, seqId2, String.valueOf(data.getMoney(name) >= threshold)));
 			break;
 		case Channel.SET_MONEY:
 			channel.read(stream);
-			if(channel.isNull())
-				return;
-
 			long money3 = Long.valueOf(channel.getMessage()).longValue();
 
-			data.setMoney(name, money3, true, save);
+			data.setMoney(name, money3, save);
 			break;
 		case Channel.ADD_MONEY:
 			channel.read(stream);
-			if(channel.isNull())
-				return;
-
 			long money4 = Long.valueOf(channel.getMessage()).longValue();
 
 			data.addMoney(name, money4, save);
 			break;
 		case Channel.REMOVE_MONEY:
 			channel.read(stream);
-			if(channel.isNull())
-				return;
-
 			long money5 = Long.valueOf(channel.getMessage()).longValue();
 
 			data.removeMoney(name, money5, save);
 			break;
 		case Channel.SEND_MONEY:
 			channel.read(stream);
-			if(channel.isNull())
-				return;
-
 			UUID sender6 = UUID.fromString(channel.getMessage());
 
 			channel.read(stream);
-			if(channel.isNull())
-				return;
-
 			long money6 = Long.valueOf(channel.getMessage()).longValue();
 
 			data.sendMoney(name, sender6, money6, true);
 			break;
 		case Channel.GET_MONEY_RANKING:
 			channel.read(stream);
-			if(channel.isNull())
-				return;
-
 			String seqId7 = channel.getMessage();
 
 			server.sendData("BungeeCord", Util.toByteArray(Channel.RETURN_MONEY_RANKING, seqId7, getMoneyRanking(name)));
 			break;
 		case Channel.GET_TICKETS:
 			channel.read(stream);
-			if(channel.isNull())
-				return;
-
 			String seqId8 = channel.getMessage();
 
 			server.sendData("BungeeCord", Util.toByteArray(Channel.RETURN_GET_TICKETS, seqId8, String.valueOf(data.getTickets())));
 			break;
 		case Channel.ADD_TICKET1:
 			channel.read(stream);
-			if(channel.isNull())
-				return;
-
 			long number9 = Long.valueOf(channel.getMessage()).longValue();
 
 			data.addTickets(number9, name, save);
 			break;
 		case Channel.ADD_TICKET2:
 			channel.read(stream);
-			if(channel.isNull())
-				return;
-
 			long number10 = Long.valueOf(channel.getMessage()).longValue();
 
 			channel.read(stream);
-			if(channel.isNull())
-				return;
-
 			long ppt10 = Long.valueOf(channel.getMessage()).longValue();
 
 			data.addTickets(number10, ppt10, save);
 			break;
 		case Channel.REMOVE_TICKET:
 			channel.read(stream);
-			if(channel.isNull())
-				return;
-
 			long number11 = Long.valueOf(channel.getMessage()).longValue();
 
 			data.removeTicket(number11, save);
 			break;
 		case Channel.CAN_BUY_TICKET:
 			channel.read(stream);
-			if(channel.isNull())
-				return;
-
 			long number17 = Long.valueOf(channel.getMessage()).longValue();
 
 			channel.read(stream);
-			if(channel.isNull())
-				return;
-
 			String seqId17 = channel.getMessage();
 
 			server.sendData("BungeeCord", Util.toByteArray(Channel.RETURN_HAS_MONEY, seqId17, String.valueOf(data.getMoney(name) >= getTicketPrice(name) * number17)));
 			break;
 		case Channel.BUY_TICKET:
 			channel.read(stream);
-			if(channel.isNull())
-				return;
-
 			long number12 = Long.valueOf(channel.getMessage()).longValue();
 
 			data.buyTicket(name, number12, getTicketPrice(name), save);
 			break;
 		case Channel.CAN_SELL_TICKET:
 			channel.read(stream);
-			if(channel.isNull())
-				return;
-
 			long number18 = Long.valueOf(channel.getMessage()).longValue();
 
 			channel.read(stream);
-			if(channel.isNull())
-				return;
-
 			String seqId18 = channel.getMessage();
 
 			server.sendData("BungeeCord", Util.toByteArray(Channel.RETURN_HAS_MONEY, seqId18, String.valueOf(data.getTickets() >= number18)));
 			break;
 		case Channel.SELL_TICKET:
 			channel.read(stream);
-			if(channel.isNull())
-				return;
-
 			long number13 = Long.valueOf(channel.getMessage()).longValue();
 
 			data.sellTicket(name, number13, save);
 			break;
 		case Channel.GET_MEDIAN:
 			channel.read(stream);
-			if(channel.isNull())
-				return;
-
 			String seqId14 = channel.getMessage();
 
 			server.sendData("BungeeCord", Util.toByteArray(Channel.RETURN_GET_MEDIAN, seqId14, String.valueOf(getMedian(name))));
 			break;
 		case Channel.GET_TICKET_PRICE:
 			channel.read(stream);
-			if(channel.isNull())
-				return;
-
 			String seqId15 = channel.getMessage();
 
 			server.sendData("BungeeCord", Util.toByteArray(Channel.RETURN_GET_TICKET_PRICE, seqId15, String.valueOf(getTicketPrice(name))));
 			break;
 		case Channel.GET_NUMBER_OF_PLAYER_DATA_LOADED:
 			channel.read(stream);
-			if(channel.isNull())
-				return;
-
 			String seqId16 = channel.getMessage();
 
 			server.sendData("BungeeCord", Util.toByteArray(Channel.RETURN_GET_NUMBER_OF_PLAYER_DATA_LOADED, seqId16, String.valueOf(getNumberOfPlayerDataLoaded())));
@@ -440,7 +378,7 @@ public class BCManager implements Listener, BCHyperingEconomyAPI {
 
 	@Override
 	public void setMoney(ServerName name, UUID uuid, long money){
-		getPlayerData(uuid).setMoney(name, money, true, false);
+		getPlayerData(uuid).setMoney(name, money, false);
 	}
 
 	@Override
@@ -460,7 +398,7 @@ public class BCManager implements Listener, BCHyperingEconomyAPI {
 
 	@Override
 	public String getMoneyRanking(ServerName name){
-		return money_rankings.get(name);
+		return moneyRankings.get(name);
 	}
 
 	@Override

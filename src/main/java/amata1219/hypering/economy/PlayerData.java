@@ -55,11 +55,19 @@ public class PlayerData {
 		return money.get(name);
 	}
 
-	public void setMoney(ServerName name, long money, boolean update, boolean save){
+	public void setMoney(ServerName name, long money, boolean save){
 		this.money.put(name, money < 0 ? 0 : money);
 
-		if(update)
-			BCManager.getManager().updateMedian(name);
+		BCManager.getManager().updateMedian(name);
+
+		if(save)
+			save();
+	}
+
+	public void setMoneyNonUpdate(ServerName name, long money, boolean save){
+		this.money.put(name, money < 0 ? 0 : money);
+
+		//BCManager.getManager().updateMedian(name);
 
 		if(save)
 			save();
@@ -74,11 +82,11 @@ public class PlayerData {
 			l = Long.MAX_VALUE;
 		}
 
-		setMoney(name, l, true, save);
+		setMoney(name, l, save);
 	}
 
 	public void removeMoney(ServerName name, long money, boolean save){
-		setMoney(name, getMoney(name) - money, true, save);
+		setMoney(name, getMoney(name) - money, save);
 	}
 
 	public void sendMoney(ServerName name, UUID to, long money, boolean save){
@@ -187,7 +195,7 @@ public class PlayerData {
 	}
 
 	public void buyTicket(ServerName name, long tickets, long amountPerTicket, boolean save){
-		setMoney(name, getMoney(name) - tickets * amountPerTicket, false, false);
+		setMoney(name, getMoney(name) - tickets * amountPerTicket, false);
 		addTickets(tickets, amountPerTicket, save);
 	}
 
@@ -195,9 +203,12 @@ public class PlayerData {
 		tickets = tickets > getTickets() ? getTickets() : tickets;
 
 		for(long l = tickets; l > 0; l--){
-			setMoney(name, getMoney(name) + (long) ((Float.valueOf(getAmountPerTicket()) / 10.0F) * 9.0F), false, false);
+			double d = getAmountPerTicket() / 10D * 9D;
+			setMoneyNonUpdate(name, getMoney(name) + (long) d, false);
 			removeTicket(1, false);
 		}
+
+		BCManager.getManager().updateMedian(name);
 
 		if(save)
 			save();
@@ -205,6 +216,10 @@ public class PlayerData {
 
 	public long getTotalAssets(ServerName name){
 		return getMoney(name) + getTicketAmounts();
+	}
+
+	public boolean isNothingTotalAssets(ServerName name){
+		return getTotalAssets(name) <= 0;
 	}
 
 }

@@ -24,8 +24,6 @@ public class SaveTaskRunnable implements Runnable{
 
 			}.reversed());
 		});
-
-		sort();
 	}
 
 	@Override

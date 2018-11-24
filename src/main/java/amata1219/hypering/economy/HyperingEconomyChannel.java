@@ -21,7 +21,6 @@ public class HyperingEconomyChannel {
 	public void read(DataInputStream stream){
 		try {
 			message = stream.readUTF();
-			System.out.println(message);
 		}catch(IOException e){
 			e.printStackTrace();
 			message = null;
@@ -38,10 +37,6 @@ public class HyperingEconomyChannel {
 
 	public String getMessage(){
 		return message;
-	}
-
-	public boolean isNull(){
-		return message == null;
 	}
 
 }
