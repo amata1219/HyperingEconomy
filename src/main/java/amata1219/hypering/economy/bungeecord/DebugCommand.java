@@ -5,6 +5,7 @@ import java.util.UUID;
 import amata1219.hypering.economy.MySQL;
 import amata1219.hypering.economy.PlayerData;
 import amata1219.hypering.economy.ServerName;
+import net.md_5.bungee.BungeeCord;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -38,7 +39,13 @@ public class DebugCommand extends Command {
 					return;
 				}
 
-				PlayerData data = getPlayerData(args[2]);
+				if(BungeeCord.getInstance().getPlayer(args[2]) == null){
+					send(sender, "指定されたプレイヤーはオフラインです。");
+					return;
+				}
+
+
+				PlayerData data = getPlayerData(BungeeCord.getInstance().getPlayer(args[2]).getUniqueId());
 				if(data == null){
 					send(sender, "指定されたプレイヤーは存在しません");
 					return;
@@ -60,7 +67,12 @@ public class DebugCommand extends Command {
 					return;
 				}
 
-				PlayerData data = getPlayerData(args[3]);
+				if(BungeeCord.getInstance().getPlayer(args[3]) == null){
+					send(sender, "指定されたプレイヤーはオフラインです。");
+					return;
+				}
+
+				PlayerData data = getPlayerData(BungeeCord.getInstance().getPlayer(args[3]).getUniqueId());
 				if(data == null){
 					send(sender, "指定されたプレイヤーは存在しません");
 					return;
@@ -151,35 +163,8 @@ public class DebugCommand extends Command {
 		sender.sendMessage(new TextComponent(ChatColor.GOLD + s));
 	}
 
-	public UUID toUUID(String name){
-		String s = BCHyperingEconomy.getPlugin().getConfig().getString("DEBUG." + name);
-		if(s == null)
-			return null;
-
-		return UUID.fromString(s);
-	}
-
 	public String toName(String uuid){
-		for(String name : BCHyperingEconomy.getPlugin().getConfig().getSection("DEBUG").getKeys()){
-			if(BCHyperingEconomy.getPlugin().getConfig().getString("DEBUG." + name).equals(uuid))
-				return name;
-		}
-		return "Unknown";
-	}
-
-	public PlayerData getPlayerData(String name){
-		UUID uuid = toUUID(name);
-		if(uuid == null)
-			return null;
-
-		PlayerData data = BCManager.getManager().getPlayerData(uuid);
-		if(data != null)
-			System.out.println("get playerdata from map");
-
-		if(data == null)
-			throw new NullPointerException("playerdata is null");
-
-		return data;
+		return uuid.toString();
 	}
 
 	public PlayerData getPlayerData(UUID uuid){
