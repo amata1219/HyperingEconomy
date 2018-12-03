@@ -17,7 +17,7 @@ public interface BCHyperingEconomyAPI {
 
 	public void addMoney(ServerName name, UUID uuid, long money);
 
-	public void substractMoney(ServerName name, UUID uuid, long money);
+	public void removeMoney(ServerName name, UUID uuid, long money);
 
 	public void sendMoney(ServerName name, UUID sender, UUID receiver, long money);
 
@@ -30,7 +30,7 @@ public interface BCHyperingEconomyAPI {
 
 	public void addTicket(UUID uuid, long numberOfTickets, long pricePerTicket);
 
-	public void substractTicket(UUID uuid, long numberOfTickets);
+	public void removeTicket(UUID uuid, long numberOfTickets);
 
 	public boolean canBuyTicket(UUID uuid, ServerName where, long numberOfTickets);
 

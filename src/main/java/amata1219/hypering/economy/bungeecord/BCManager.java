@@ -298,7 +298,7 @@ public class BCManager implements Listener, BCHyperingEconomyAPI {
 			channel.read(stream);
 			long number11 = Long.valueOf(channel.getMessage()).longValue();
 
-			data.removeTicket(number11, save);
+			data.removeTicket(number11, save, true);
 			break;
 		case Channel.CAN_BUY_TICKET:
 			channel.read(stream);
@@ -375,7 +375,7 @@ public class BCManager implements Listener, BCHyperingEconomyAPI {
 	}
 
 	@Override
-	public void substractMoney(ServerName name, UUID uuid, long money){
+	public void removeMoney(ServerName name, UUID uuid, long money){
 		getPlayerData(uuid).removeMoney(name, money, false);
 	}
 
@@ -405,8 +405,8 @@ public class BCManager implements Listener, BCHyperingEconomyAPI {
 	}
 
 	@Override
-	public void substractTicket(UUID uuid, long numberOfTickets){
-		getPlayerData(uuid).removeTicket(numberOfTickets, false);
+	public void removeTicket(UUID uuid, long numberOfTickets){
+		getPlayerData(uuid).removeTicket(numberOfTickets, false, true);
 	}
 
 	@Override

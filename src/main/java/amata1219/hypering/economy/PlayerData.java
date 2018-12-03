@@ -180,9 +180,11 @@ public class PlayerData {
 		addTickets(tickets, false);
 		addTicketAmounts(amountPerTicket * tickets, save);
 
+		for(ServerName name  : ServerName.values())
+			BCManager.getManager().updateMedian(name);
 	}
 
-	public void removeTicket(long tickets, boolean save){
+	public void removeTicket(long tickets, boolean save, boolean update){
 		tickets = tickets > this.tickets ? this.tickets : tickets;
 
 		for(long l = tickets; l > 0; l--){
@@ -192,6 +194,11 @@ public class PlayerData {
 
 		if(save)
 			save();
+
+		if(update){
+			for(ServerName name  : ServerName.values())
+				BCManager.getManager().updateMedian(name);
+		}
 	}
 
 	public void buyTicket(ServerName name, long tickets, long amountPerTicket, boolean save){
@@ -205,7 +212,7 @@ public class PlayerData {
 		for(long l = tickets; l > 0; l--){
 			double d = getAmountPerTicket() / 10D * 9D;
 			setMoneyNonUpdate(name, getMoney(name) + (long) d, false);
-			removeTicket(1, false);
+			removeTicket(1, false, false);
 		}
 
 		BCManager.getManager().updateMedian(name);
