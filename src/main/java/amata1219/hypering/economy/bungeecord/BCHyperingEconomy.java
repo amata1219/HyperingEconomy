@@ -1,3 +1,8 @@
+/*
+ * 本プラグインの著作権は、amata1219(Twitter@amata1219)に帰属します。
+ * また、本プラグインの二次配布、改変使用、自作発言を禁じます。
+ */
+
 package amata1219.hypering.economy.bungeecord;
 
 import java.io.File;
