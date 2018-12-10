@@ -185,7 +185,7 @@ public class PlayerData {
 	}
 
 	public void removeTicket(long tickets, boolean save, boolean update){
-		tickets = tickets > this.tickets ? this.tickets : tickets;
+		tickets = tickets > this.tickets ? 0 : tickets;
 
 		for(long l = tickets; l > 0; l--){
 			removeTicketAmounts(getAmountPerTicket(), false);
