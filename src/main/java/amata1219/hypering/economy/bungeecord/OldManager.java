@@ -26,9 +26,9 @@ import net.md_5.bungee.api.scheduler.ScheduledTask;
 import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.event.EventHandler;
 
-public class BCManager implements Listener, BCHyperingEconomyAPI {
+public class OldManager implements Listener, BCHyperingEconomyAPI {
 
-	private static BCManager manager;
+	private static OldManager manager;
 
 	private Map<UUID, PlayerData> players = new HashMap<>(), offlinePlayers = new HashMap<>();
 	//オフラインの対象は1ヶ月以内にログインしたプレイヤーのみ
@@ -42,7 +42,7 @@ public class BCManager implements Listener, BCHyperingEconomyAPI {
 	private int saveInterval = 10, enableMedian = 2;
 	private long initialPossesionMoney = 5000;
 
-	public BCManager(){
+	public OldManager(){
 		manager = this;
 
 		Configuration config = BCHyperingEconomy.getPlugin().getConfig();
@@ -67,7 +67,7 @@ public class BCManager implements Listener, BCHyperingEconomyAPI {
 		startTaskRunnable();
 	}
 
-	public static BCManager getManager(){
+	public static OldManager getManager(){
 		return manager;
 	}
 

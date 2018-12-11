@@ -107,13 +107,13 @@ public class DebugCommand extends Command {
 					return;
 				}
 			}else if(args[1].equalsIgnoreCase("median")){
-				send(sender, name.toString() + ": " + BCManager.getManager().getMedian(name));
+				send(sender, name.toString() + ": " + OldManager.getManager().getMedian(name));
 				return;
 			}else if(args[1].equalsIgnoreCase("ticketprice")){
-				send(sender, name.toString() + ": " + BCManager.getManager().getTicketPrice(name));
+				send(sender, name.toString() + ": " + OldManager.getManager().getTicketPrice(name));
 				return;
 			}else if(args[1].equalsIgnoreCase("update")){
-				BCManager.getManager().updateMedian(name);
+				OldManager.getManager().updateMedian(name);
 				return;
 			}
 		}else if(args[0].equalsIgnoreCase("top")){
@@ -129,7 +129,7 @@ public class DebugCommand extends Command {
 				}
 			}
 
-			String[] s = BCManager.getManager().getMoneyRanking(name).split(",");
+			String[] s = OldManager.getManager().getMoneyRanking(name).split(",");
 
 			number = number > s.length ? s.length : number;
 
@@ -141,19 +141,19 @@ public class DebugCommand extends Command {
 			}
 		}else if(args[0].equalsIgnoreCase("loaded")){
 			send(sender, "");
-			send(sender, "#Online(" + BCManager.getManager().getPlayerDataMap().keySet().size() + ")");
-			BCManager.getManager().getPlayerDataMap().keySet().forEach(k -> send(sender, toName(k.toString())));
+			send(sender, "#Online(" + OldManager.getManager().getPlayerDataMap().keySet().size() + ")");
+			OldManager.getManager().getPlayerDataMap().keySet().forEach(k -> send(sender, toName(k.toString())));
 			send(sender, "");
-			send(sender, "#Offline(" + BCManager.getManager().getOfflinePlayerDataMap().keySet().size() + ")");
-			BCManager.getManager().getOfflinePlayerDataMap().keySet().forEach(k -> send(sender, toName(k.toString())));
+			send(sender, "#Offline(" + OldManager.getManager().getOfflinePlayerDataMap().keySet().size() + ")");
+			OldManager.getManager().getOfflinePlayerDataMap().keySet().forEach(k -> send(sender, toName(k.toString())));
 		}else if(args[0].equalsIgnoreCase("all")){
 			send(sender, "プレイヤー名: 所持金, チケット, チケットの価値, 1枚当たりの価値");
 			send(sender, "");
-			send(sender, "#Online(" + BCManager.getManager().getPlayerDataMap().keySet().size() + ")");
-			BCManager.getManager().getPlayerDataMap().forEach((k, v) -> send(sender, toName(k.toString()) + ": ¥" + v.getMoney(name) + ", " + v.getTickets() + "枚, ¥" + v.getTicketAmounts() + ", ¥" + v.getAmountPerTicket()));
+			send(sender, "#Online(" + OldManager.getManager().getPlayerDataMap().keySet().size() + ")");
+			OldManager.getManager().getPlayerDataMap().forEach((k, v) -> send(sender, toName(k.toString()) + ": ¥" + v.getMoney(name) + ", " + v.getTickets() + "枚, ¥" + v.getTicketAmounts() + ", ¥" + v.getAmountPerTicket()));
 			send(sender, "");
-			send(sender, "#Offline(" + BCManager.getManager().getOfflinePlayerDataMap().keySet().size() + ")");
-			BCManager.getManager().getOfflinePlayerDataMap().forEach((k, v) -> send(sender, toName(k.toString()) + ": ¥" + v.getMoney(name) + ", " + v.getTickets() + "枚, ¥" + v.getTicketAmounts() + ", ¥" + v.getAmountPerTicket()));
+			send(sender, "#Offline(" + OldManager.getManager().getOfflinePlayerDataMap().keySet().size() + ")");
+			OldManager.getManager().getOfflinePlayerDataMap().forEach((k, v) -> send(sender, toName(k.toString()) + ": ¥" + v.getMoney(name) + ", " + v.getTickets() + "枚, ¥" + v.getTicketAmounts() + ", ¥" + v.getAmountPerTicket()));
 		}else if(args[0].equalsIgnoreCase("name")){
 			send(sender, "ServerName: " + name);
 		}
@@ -168,7 +168,7 @@ public class DebugCommand extends Command {
 	}
 
 	public PlayerData getPlayerData(UUID uuid){
-		PlayerData data = BCManager.getManager().getPlayerData(uuid);
+		PlayerData data = OldManager.getManager().getPlayerData(uuid);
 		if(data == null)
 			data = MySQL.getPlayerData(uuid);
 

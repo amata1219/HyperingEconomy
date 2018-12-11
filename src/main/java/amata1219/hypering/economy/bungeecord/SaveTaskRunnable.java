@@ -28,7 +28,7 @@ public class SaveTaskRunnable implements Runnable{
 
 	@Override
 	public void run(){
-		BCManager.getManager().getPlayerDataMap().values().forEach(data -> data.save());
+		OldManager.getManager().getPlayerDataMap().values().forEach(data -> data.save());
 		sort();
 	}
 
@@ -37,7 +37,7 @@ public class SaveTaskRunnable implements Runnable{
 		for(ServerName name : ServerName.values()){
 			list.sort(comparators.get(name));
 
-			BCManager.getManager().getMoneyRankingMap().put(name, normalize(name, list));
+			OldManager.getManager().getMoneyRankingMap().put(name, normalize(name, list));
 		}
 	}
 

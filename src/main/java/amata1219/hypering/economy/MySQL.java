@@ -99,10 +99,11 @@ public class MySQL {
 
 				try(ResultSet result = statement.executeQuery()){
 					while(result.next()){
+
 						Map<ServerName, Long> money = new HashMap<>();
 
-						money.put(ServerName.main, result.getLong("main"));
-						money.put(ServerName.pata, result.getLong("pata"));
+						money.put(ServerName.MAIN, result.getLong("main"));
+						money.put(ServerName.PATA, result.getLong("pata"));
 
 						data = PlayerData.load(uuid, money, result.getLong("tickets"), result.getLong("ticketamounts"));
 
@@ -136,8 +137,8 @@ public class MySQL {
 				while(result.next()){
 					Map<ServerName, Long> money = new HashMap<>();
 
-					money.put(ServerName.main, result.getLong("main"));
-					money.put(ServerName.pata, result.getLong("pata"));
+					money.put(ServerName.MAIN, result.getLong("main"));
+					money.put(ServerName.PATA, result.getLong("pata"));
 					list.add(PlayerData.load(UUID.fromString(result.getString("uuid")), money, result.getLong("tickets"), result.getLong("ticketamounts")));
 				}
 
@@ -152,7 +153,7 @@ public class MySQL {
 
 	public static boolean savePlayerData(PlayerData data){
 		return putCommand("UPDATE " + database + "." + table + " SET tickets = " + data.getTickets() + ",ticketamounts = "
-				+ data.getTicketAmounts() + ",main = " + data.getMoney(ServerName.main) + ",pata = " + data.getMoney(ServerName.pata) + " WHERE uuid='" + data.getUniqueId().toString() + "'");
+				+ data.getTicketAmounts() + ",main = " + data.getMoney(ServerName.MAIN) + ",pata = " + data.getMoney(ServerName.PATA) + " WHERE uuid='" + data.getUniqueId().toString() + "'");
 	}
 
 	public static boolean saveLastLogined(PlayerData data){
@@ -170,8 +171,8 @@ public class MySQL {
 					if(System.currentTimeMillis() - result.getLong("last") <= 2592000000L){
 						Map<ServerName, Long> money = new HashMap<>();
 
-						money.put(ServerName.main, result.getLong("main"));
-						money.put(ServerName.pata, result.getLong("pata"));
+						money.put(ServerName.MAIN, result.getLong("main"));
+						money.put(ServerName.PATA, result.getLong("pata"));
 
 						UUID uuid = UUID.fromString(result.getString("uuid"));
 

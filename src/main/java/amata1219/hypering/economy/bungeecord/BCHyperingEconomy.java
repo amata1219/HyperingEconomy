@@ -52,18 +52,18 @@ public class BCHyperingEconomy extends Plugin{
 
 		getProxy().registerChannel("BungeeCord");
 
-		new BCManager();
+		new OldManager();
 
-		getProxy().getPluginManager().registerListener(plugin, BCManager.getManager());
+		getProxy().getPluginManager().registerListener(plugin, OldManager.getManager());
 
 		getProxy().getPluginManager().registerCommand(this, new DebugCommand());
 	}
 
 	@Override
 	public void onDisable(){
-		BCManager.getManager().stopTaskRunnable();
+		OldManager.getManager().stopTaskRunnable();
 
-		BCManager.getManager().getPlayerDataMap().values().forEach(data -> data.save());
+		OldManager.getManager().getPlayerDataMap().values().forEach(data -> data.save());
 
 		MySQL.close();
 	}
@@ -73,7 +73,7 @@ public class BCHyperingEconomy extends Plugin{
 	}
 
 	public BCHyperingEconomyAPI getBCHyperingEconomyAPI(){
-		return BCManager.getManager();
+		return OldManager.getManager();
 	}
 
 	public Configuration getConfig(){
