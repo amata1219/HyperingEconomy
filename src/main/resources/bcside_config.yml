@@ -5,6 +5,3 @@ MySQL:
   username: 'root'
   password: ''
   table: 'playerdata'
-SaveInterval: 10
-InitialPossessionMoney: 5000
-EnableMedian: 3

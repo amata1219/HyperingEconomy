@@ -4,13 +4,21 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
 public class Database implements HyperingEconomyAPI {
+
+	//uuid char(36) playerdata text
+	//create database HyperingEconomyDatabase character set utf8 collate utf8_general_ci;
+	//create table hyperingeconomydatabase.playerdata(uuid varchar(36), last bigint, tickets bigint, ticketamounts bigint, main bigint, pata bigint);
+	//2592000000
 
 	private static Database database;
 
@@ -107,13 +115,58 @@ public class Database implements HyperingEconomyAPI {
 		return null;
 	}
 
+	public static HyperingEconomyAPI getHyperingEconomyAPI(){
+		return (HyperingEconomyAPI) database;
+	}
+
 	@Override
 	public void updateMedian(ServerName serverName) {
+		String columnIndex = serverName.name().toLowerCase();
+
+		List<Long> list = new ArrayList<>();
+
+		try(Connection con = Database.database.source.getConnection();
+				PreparedStatement statement = con.prepareStatement("SELECT " + columnIndex + "," + "ticketamounts" + " FROM " + Database.getDatabaseName() + "." + Database.getTableName() + " WHERE last<=2592000000 AND " + columnIndex + ">0")){
+			try(ResultSet result = statement.executeQuery()){
+				while(result.next())
+					list.add(result.getLong(columnIndex) + result.getLong("ticketamounts"));
+
+				result.close();
+			}
+
+		}catch(SQLException e){
+			e.printStackTrace();
+		}
+
+		if(list.isEmpty())
+			median.put(serverName, 5000L);
+
+		list.sort(Comparator.reverseOrder());
+
+		int size = list.size();
+
+		if(size % 2 == 0)
+			median.put(serverName, list.get(size / 2));
+		else
+			median.put(serverName, list.get(size / 2));
 	}
 
 	@Override
 	public long getMedian(ServerName serverName){
 		return median.get(serverName);
+	}
+
+	@Override
+	public long getTicketPrice(ServerName serverName){
+		return getMedian(serverName) / 1000L;
+	}
+
+	public void create(UUID uuid){
+		putCommand("INSERT INTO " + Database.getDatabaseName() + "." + Database.getTableName() + " VALUES ('" + uuid.toString() + "'," + System.currentTimeMillis() + "," + 0L + "," + 0L + "," + 0L + "," + 0L + ")");
+	}
+
+	public void delete(UUID uuid){
+		putCommand("DELETE FROM " + Database.getDatabaseName() + "." + Database.getTableName() + " WHERE uuid='" + uuid.toString() + "'");
 	}
 
 	@Override
@@ -149,6 +202,8 @@ public class Database implements HyperingEconomyAPI {
 	@Override
 	public void setMoney(ServerName serverName, UUID uuid, long money) {
 		new Saver<Long>().save(uuid, serverName.name().toLowerCase(), money);
+
+		updateMedian(serverName);
 	}
 
 	@Override
@@ -164,6 +219,11 @@ public class Database implements HyperingEconomyAPI {
 	@Override
 	public long getTickets(UUID uuid) {
 		return new Getter<Long>().get(uuid, "tickets");
+	}
+
+	@Override
+	public void setTickets(UUID uuid, long tickets){
+		new Saver<Long>().save(uuid, "tickets", tickets);
 	}
 
 	@Override
@@ -193,5 +253,25 @@ public class Database implements HyperingEconomyAPI {
 			return 0;
 
 		return getTicketsValue(uuid) / tickets;
+	}
+
+	@Override
+	public void setTicketsValue(UUID uuid, long ticketsValue) {
+		new Saver<Long>().save(uuid, "ticketamounts", ticketsValue);
+	}
+
+	@Override
+	public void addTicketsValue(UUID uuid, long increase) {
+		new Saver<Long>().save(uuid, "ticketamounts", getTicketsValue(uuid) + increase);
+	}
+
+	@Override
+	public void removeTicketsValue(UUID uuid, long decrease) {
+		new Saver<Long>().save(uuid, "ticketamounts", getTicketsValue(uuid) + decrease);
+	}
+
+	@Override
+	public TicketEditer getTicketEditer(UUID uuid) {
+		return new TicketEditer(uuid);
 	}
 }
