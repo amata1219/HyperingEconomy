@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +27,7 @@ public class Database implements HyperingEconomyAPI {
 	private String tableName;
 
 	private HashMap<ServerName, Long> median = new HashMap<>();
+	private HashMap<ServerName, MoneyRanking> ranking = new HashMap<>();
 
 	private Database(){
 
@@ -71,6 +71,14 @@ public class Database implements HyperingEconomyAPI {
 		return database;
 	}
 
+	public static HyperingEconomyAPI getHyperingEconomyAPI(){
+		return (HyperingEconomyAPI) database;
+	}
+
+	public static HikariDataSource getHikariDataSource(){
+		return Database.database.source;
+	}
+
 	public static String getDatabaseName(){
 		return Database.database.databaseName;
 	}
@@ -86,15 +94,13 @@ public class Database implements HyperingEconomyAPI {
 			database.source.close();
 	}
 
-	public static boolean putCommand(String command){
+	public static void putCommand(String command){
 		try(Connection con = Database.database.source.getConnection();
 				PreparedStatement statement = con.prepareStatement(command)){
 			statement.executeUpdate();
 		}catch(SQLException e){
 			e.printStackTrace();
-			return false;
 		}
-		return true;
 	}
 
 	public static Object getResult(String command, String columnIndex){
@@ -115,17 +121,13 @@ public class Database implements HyperingEconomyAPI {
 		return null;
 	}
 
-	public static HyperingEconomyAPI getHyperingEconomyAPI(){
-		return (HyperingEconomyAPI) database;
-	}
-
 	@Override
 	public void updateMedian(ServerName serverName) {
 		String columnIndex = serverName.name().toLowerCase();
 
-		List<Long> list = new ArrayList<>();
+		List<Long> list = new Getter<Long>().getList("SELECT " + columnIndex + ",ticketamounts FROM " + Database.getDatabaseName() + "." + Database.getTableName() + " WHERE last<=2592000000 AND " + columnIndex + ">0", columnIndex, "ticketamounts");
 
-		try(Connection con = Database.database.source.getConnection();
+		/*try(Connection con = Database.database.source.getConnection();
 				PreparedStatement statement = con.prepareStatement("SELECT " + columnIndex + "," + "ticketamounts" + " FROM " + Database.getDatabaseName() + "." + Database.getTableName() + " WHERE last<=2592000000 AND " + columnIndex + ">0")){
 			try(ResultSet result = statement.executeQuery()){
 				while(result.next())
@@ -136,7 +138,7 @@ public class Database implements HyperingEconomyAPI {
 
 		}catch(SQLException e){
 			e.printStackTrace();
-		}
+		}*/
 
 		if(list.isEmpty())
 			median.put(serverName, 5000L);
@@ -159,6 +161,15 @@ public class Database implements HyperingEconomyAPI {
 	@Override
 	public long getTicketPrice(ServerName serverName){
 		return getMedian(serverName) / 1000L;
+	}
+
+	@Override
+	public MoneyRanking getMoneyRanking(ServerName serverName){
+		return ranking.get(serverName);
+	}
+
+	void updateMoneyRanking(ServerName serverName){
+		ranking.put(serverName, MoneyRanking.load(serverName));
 	}
 
 	public void create(UUID uuid){
@@ -217,6 +228,11 @@ public class Database implements HyperingEconomyAPI {
 	}
 
 	@Override
+	public MoneyEditer getMoneyEditer(ServerName serverName, UUID uuid){
+		return new MoneyEditer(serverName, uuid);
+	}
+
+	@Override
 	public long getTickets(UUID uuid) {
 		return new Getter<Long>().get(uuid, "tickets");
 	}
@@ -271,7 +287,7 @@ public class Database implements HyperingEconomyAPI {
 	}
 
 	@Override
-	public TicketEditer getTicketEditer(UUID uuid) {
-		return new TicketEditer(uuid);
+	public TicketEditer getTicketEditer(ServerName serverName, UUID uuid) {
+		return new TicketEditer(serverName, uuid);
 	}
 }

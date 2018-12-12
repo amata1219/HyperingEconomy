@@ -10,6 +10,8 @@ public interface HyperingEconomyAPI {
 
 	long getTicketPrice(ServerName serverName);
 
+	MoneyRanking getMoneyRanking(ServerName serverName);
+
 	//void save(UUID uuid);
 
 	boolean exist(UUID uuid);
@@ -29,6 +31,8 @@ public interface HyperingEconomyAPI {
 	void addMoney(ServerName serverName, UUID uuid, long increase);
 
 	void removeMoney(ServerName serverName, UUID uuid, long decrease);
+
+	MoneyEditer getMoneyEditer(ServerName serverName, UUID uuid);
 
 	long getTickets(UUID uuid);
 
@@ -50,6 +54,6 @@ public interface HyperingEconomyAPI {
 
 	long getTicketsValuePerTicket(UUID uuid);
 
-	TicketEditer getTicketEditer(UUID uuid);
+	TicketEditer getTicketEditer(ServerName serverName, UUID uuid);
 
 }
