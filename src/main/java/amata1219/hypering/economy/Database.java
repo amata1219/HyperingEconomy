@@ -24,7 +24,9 @@ public class Database implements HyperingEconomyAPI {
 	private HikariDataSource source;
 
 	private String databaseName;
-	private String tableName;
+	private String playerDataTableName;
+	private String ticketDataTableName;
+	private String mainMedianChainTableName;
 
 	private HashMap<ServerName, Long> median = new HashMap<>();
 	private HashMap<ServerName, MoneyRanking> ranking = new HashMap<>();
@@ -44,11 +46,13 @@ public class Database implements HyperingEconomyAPI {
 		}.println();
 	}
 
-	public static void load(String host, int port, String databaseName, String userName, String password, String tableName){
+	public static void load(String host, int port, String databaseName, String userName, String password){
 		Database database = new Database();
 
 		database.databaseName = databaseName;
-		database.tableName = tableName;
+		database.playerDataTableName = "playerdata";
+		database.ticketDataTableName = "ticketdata";
+		database.mainMedianChainTableName = "main_medianchain";
 
 		HikariConfig config = new HikariConfig();
 
@@ -83,8 +87,16 @@ public class Database implements HyperingEconomyAPI {
 		return Database.database.databaseName;
 	}
 
-	public static String getTableName(){
-		return Database.database.tableName;
+	public static String getPlayerDataTableName(){
+		return Database.database.playerDataTableName;
+	}
+
+	public static String getTicketDataTableName(){
+		return Database.database.ticketDataTableName;
+	}
+
+	public static String getMainMedianChainTableName(){
+		return Database.database.mainMedianChainTableName;
 	}
 
 	public static void close(){
@@ -125,20 +137,7 @@ public class Database implements HyperingEconomyAPI {
 	public void updateMedian(ServerName serverName) {
 		String columnIndex = serverName.name().toLowerCase();
 
-		List<Long> list = new Getter<Long>().getList("SELECT " + columnIndex + ",ticketamounts FROM " + Database.getDatabaseName() + "." + Database.getTableName() + " WHERE last<=2592000000 AND " + columnIndex + ">0", columnIndex, "ticketamounts");
-
-		/*try(Connection con = Database.database.source.getConnection();
-				PreparedStatement statement = con.prepareStatement("SELECT " + columnIndex + "," + "ticketamounts" + " FROM " + Database.getDatabaseName() + "." + Database.getTableName() + " WHERE last<=2592000000 AND " + columnIndex + ">0")){
-			try(ResultSet result = statement.executeQuery()){
-				while(result.next())
-					list.add(result.getLong(columnIndex) + result.getLong("ticketamounts"));
-
-				result.close();
-			}
-
-		}catch(SQLException e){
-			e.printStackTrace();
-		}*/
+		List<Long> list = new Getter<Long>().getList("SELECT " + columnIndex + ",ticketamounts FROM " + Database.getDatabaseName() + "." + Database.getPlayerDataTableName() + " WHERE last<=2592000000 AND " + columnIndex + ">0", columnIndex, "ticketamounts");
 
 		if(list.isEmpty())
 			median.put(serverName, 5000L);
@@ -173,21 +172,21 @@ public class Database implements HyperingEconomyAPI {
 	}
 
 	public void create(UUID uuid){
-		putCommand("INSERT INTO " + Database.getDatabaseName() + "." + Database.getTableName() + " VALUES ('" + uuid.toString() + "'," + System.currentTimeMillis() + "," + 0L + "," + 0L + "," + 0L + "," + 0L + ")");
+		putCommand("INSERT INTO " + Database.getDatabaseName() + "." + Database.getPlayerDataTableName() + " VALUES ('" + uuid.toString() + "'," + System.currentTimeMillis() + "," + 0L + "," + 0L + "," + 0L + "," + 0L + ")");
 	}
 
 	public void delete(UUID uuid){
-		putCommand("DELETE FROM " + Database.getDatabaseName() + "." + Database.getTableName() + " WHERE uuid='" + uuid.toString() + "'");
+		putCommand("DELETE FROM " + Database.getDatabaseName() + "." + Database.getPlayerDataTableName() + " WHERE uuid='" + uuid.toString() + "'");
 	}
 
 	@Override
 	public boolean exist(UUID uuid) {
-		return new Getter<Integer>().get("SELECT COUNT(uuid) AS count FROM " + Database.getDatabaseName() + "." + Database.getTableName() + " WHERE uuid='" + uuid.toString() + "'", "count") == 1;
+		return new Getter<Integer>().get("SELECT COUNT(uuid) AS count FROM " + Database.getDatabaseName() + "." + Database.getPlayerDataTableName() + " WHERE uuid='" + uuid.toString() + "'", "count") == 1;
 	}
 
 	@Override
 	public int existSize(){
-		return new Getter<Integer>().get("SELECT COUNT(uuid) AS count FROM " + Database.getDatabaseName() + "." + Database.getTableName(), "count");
+		return new Getter<Integer>().get("SELECT COUNT(uuid) AS count FROM " + Database.getDatabaseName() + "." + Database.getPlayerDataTableName(), "count");
 	}
 
 	@Override
@@ -197,7 +196,7 @@ public class Database implements HyperingEconomyAPI {
 
 	@Override
 	public int activeSize(){
-		return new Getter<Integer>().get("SELECT COUNT(uuid) AS count FROM " + Database.getDatabaseName() + "." + Database.getTableName() + " WHERE last<=2592000000", "count");
+		return new Getter<Integer>().get("SELECT COUNT(uuid) AS count FROM " + Database.getDatabaseName() + "." + Database.getPlayerDataTableName() + " WHERE last<=2592000000", "count");
 	}
 
 	@Override

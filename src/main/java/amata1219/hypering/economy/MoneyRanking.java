@@ -21,11 +21,11 @@ public class MoneyRanking {
 		MoneyRanking ranking = new MoneyRanking();
 
 		List<UUID> uuids = new ArrayList<>();
-		for(String key : new Getter<String>().getList("SELECT uuid FROM " + Database.getDatabaseName() + "." + Database.getTableName(), "uuid"))
+		for(String key : new Getter<String>().getList("SELECT uuid FROM " + Database.getDatabaseName() + "." + Database.getPlayerDataTableName(), "uuid"))
 			uuids.add(UUID.fromString(key));
 
 		String columnIndex = serverName.name().toLowerCase();
-		List<Long> money = new Getter<Long>().getList("SELECT " + columnIndex + " FROM " + Database.getDatabaseName() + "." + Database.getTableName(), columnIndex);
+		List<Long> money = new Getter<Long>().getList("SELECT " + columnIndex + " FROM " + Database.getDatabaseName() + "." + Database.getPlayerDataTableName(), columnIndex);
 
 		ranking.quickSort(uuids, money, 0, uuids.size() - 1, true);
 

@@ -32,9 +32,9 @@ import net.md_5.bungee.config.ConfigurationProvider;
 import net.md_5.bungee.config.YamlConfiguration;
 import net.md_5.bungee.event.EventHandler;
 
-public class Necleus extends Plugin implements Listener {
+public class Nucleus extends Plugin implements Listener {
 
-	private static Necleus plugin;
+	private static Nucleus plugin;
 
 	private Configuration config;
 
@@ -62,7 +62,7 @@ public class Necleus extends Plugin implements Listener {
 
 		});
 
-		Database.load(config.getString("MySQL.host"), config.getInt("MySQL.port"), config.getString("MySQL.database"), config.getString("username"), config.getString("password"), config.getString("MySQL.table"));
+		Database.load(config.getString("MySQL.host"), config.getInt("MySQL.port"), config.getString("MySQL.database"), config.getString("username"), config.getString("password"));
 
 		rankingUpdater = getProxy().getScheduler().schedule(this, new MoneyRankingUpdater(), 0, 5, TimeUnit.MINUTES);
 	}
@@ -74,7 +74,7 @@ public class Necleus extends Plugin implements Listener {
 		Database.close();
 	}
 
-	public static Necleus getPlugin(){
+	public static Nucleus getPlugin(){
 		return plugin;
 	}
 

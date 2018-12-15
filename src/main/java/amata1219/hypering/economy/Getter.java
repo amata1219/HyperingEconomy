@@ -17,7 +17,7 @@ public class Getter<T> {
 
 	@SuppressWarnings("unchecked")
 	public T get(UUID uuid, String columnIndex){
-		return (T) Database.getResult("SELECT " + columnIndex + " FROM " + Database.getDatabaseName() + "." + Database.getTableName() + " WHERE uuid='" + uuid.toString() + "'", columnIndex);
+		return (T) Database.getResult("SELECT " + columnIndex + " FROM " + Database.getDatabaseName() + "." + Database.getPlayerDataTableName() + " WHERE uuid='" + uuid.toString() + "'", columnIndex);
 	}
 
 	@SuppressWarnings("unchecked")

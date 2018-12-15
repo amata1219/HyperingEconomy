@@ -4,4 +4,3 @@ MySQL:
   database: 'HyperingEconomyDatabase'
   username: 'root'
   password: ''
-  table: 'playerdata'
