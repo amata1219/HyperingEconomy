@@ -16,13 +16,17 @@ public class MedianChain {
 	public static MedianChain load(ServerName serverName){
 		MedianChain chain = new MedianChain();
 
-		chain.table = serverName.name() + "_medianchain";
+		chain.table = serverName.name().toLowerCase() + "_medianchain";
 
 		return chain;
 	}
 
 	public long getMedian(long time){
 		return new Getter<Long>().get("SELECT median FROM " + Database.getDatabaseName() + "." + table + " WHERE time <= " + time + " ORDER BY time DESC ", "median");
+	}
+
+	public long getTicketPrice(long time){
+		return getMedian(time) / 1000;
 	}
 
 	public void flag(){

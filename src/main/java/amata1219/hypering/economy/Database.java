@@ -16,7 +16,9 @@ public class Database implements HyperingEconomyAPI {
 
 	//uuid char(36) playerdata text
 	//create database HyperingEconomyDatabase character set utf8 collate utf8_general_ci;
-	//create table hyperingeconomydatabase.playerdata(uuid varchar(36), last bigint, tickets bigint, ticketamounts bigint, main bigint, pata bigint);
+	//create table HyperingEconomyDatabase.playerdata(uuid varchar(36), last bigint, ticketids bigint, main bigint, pata bigint);
+	//create table HyperingEconomyDatabase.ticketdata(uuid varchar(36), time bigint, number int);
+	//create table HyperingEconomyDatabase.main_medianchain(time bigint, median bigint);
 	//2592000000
 
 	private static Database database;
@@ -28,6 +30,7 @@ public class Database implements HyperingEconomyAPI {
 	private String ticketDataTableName;
 	private String mainMedianChainTableName;
 
+	private HashMap<ServerName, MedianChain> chain = new HashMap<>();
 	private HashMap<ServerName, Long> median = new HashMap<>();
 	private HashMap<ServerName, MoneyRanking> ranking = new HashMap<>();
 
@@ -67,6 +70,12 @@ public class Database implements HyperingEconomyAPI {
 		config.setConnectionInitSql("SELECT 1");
 
 		database.source = new HikariDataSource(config);
+
+		for(ServerName serverName : ServerName.values()){
+			database.chain.put(serverName, MedianChain.load(serverName));
+			database.median.put(serverName, 5000L);
+			database.ranking.put(serverName, MoneyRanking.load(serverName));
+		}
 
 		Database.database = database;
 	}
@@ -150,11 +159,18 @@ public class Database implements HyperingEconomyAPI {
 			median.put(serverName, list.get(size / 2));
 		else
 			median.put(serverName, list.get(size / 2));
+
+		chain.get(serverName).update(median.get(serverName));
 	}
 
 	@Override
 	public long getMedian(ServerName serverName){
 		return median.get(serverName);
+	}
+
+	@Override
+	public MedianChain getMedianChain(ServerName serverName){
+		return chain.get(serverName);
 	}
 
 	@Override
@@ -172,7 +188,7 @@ public class Database implements HyperingEconomyAPI {
 	}
 
 	public void create(UUID uuid){
-		putCommand("INSERT INTO " + Database.getDatabaseName() + "." + Database.getPlayerDataTableName() + " VALUES ('" + uuid.toString() + "'," + System.currentTimeMillis() + "," + 0L + "," + 0L + "," + 0L + "," + 0L + ")");
+		putCommand("INSERT INTO " + Database.getDatabaseName() + "." + Database.getPlayerDataTableName() + " VALUES ('" + uuid.toString() + "'," + System.currentTimeMillis() + "," + -1L + "," + 0L + "," + 0L + ")");
 	}
 
 	public void delete(UUID uuid){
@@ -233,60 +249,32 @@ public class Database implements HyperingEconomyAPI {
 
 	@Override
 	public long getTickets(UUID uuid) {
-		return new Getter<Long>().get(uuid, "tickets");
-	}
-
-	@Override
-	public void setTickets(UUID uuid, long tickets){
-		new Saver<Long>().save(uuid, "tickets", tickets);
+		return TicketDatabase.getTickets(uuid);
 	}
 
 	@Override
 	public boolean hasTickets(UUID uuid, long threshold) {
-		return getTickets(uuid) >= threshold;
+		return TicketDatabase.hasTickets(uuid, threshold);
 	}
 
 	@Override
-	public void addTickets(UUID uuid, long increase) {
-		new Saver<Long>().save(uuid, "tickets", getTickets(uuid) + increase);
+	public void addTickets(UUID uuid, int increase) {
+		TicketDatabase.addTickets(uuid, System.nanoTime(), increase);
 	}
 
 	@Override
-	public void removeTickets(UUID uuid, long decrease) {
-		new Saver<Long>().save(uuid, "tickets", getTickets(uuid) - decrease);
+	public void removeTickets(UUID uuid, int decrease) {
+		TicketDatabase.removeTickets(uuid, decrease);
 	}
 
 	@Override
-	public long getTicketsValue(UUID uuid) {
-		return new Getter<Long>().get(uuid, "ticketamounts");
+	public void buyTickets(ServerName serverName, UUID uuid, int number){
+		TicketDatabase.buyTickets(serverName, uuid, number);
 	}
 
 	@Override
-	public long getTicketsValuePerTicket(UUID uuid) {
-		long tickets = getTickets(uuid);
-		if(tickets <= 0)
-			return 0;
-
-		return getTicketsValue(uuid) / tickets;
+	public void cashTickets(ServerName serverName, UUID uuid, int number){
+		TicketDatabase.cashTickets(serverName, uuid, number);
 	}
 
-	@Override
-	public void setTicketsValue(UUID uuid, long ticketsValue) {
-		new Saver<Long>().save(uuid, "ticketamounts", ticketsValue);
-	}
-
-	@Override
-	public void addTicketsValue(UUID uuid, long increase) {
-		new Saver<Long>().save(uuid, "ticketamounts", getTicketsValue(uuid) + increase);
-	}
-
-	@Override
-	public void removeTicketsValue(UUID uuid, long decrease) {
-		new Saver<Long>().save(uuid, "ticketamounts", getTicketsValue(uuid) + decrease);
-	}
-
-	@Override
-	public TicketEditer getTicketEditer(ServerName serverName, UUID uuid) {
-		return new TicketEditer(serverName, uuid);
-	}
 }

@@ -8,11 +8,11 @@ public interface HyperingEconomyAPI {
 
 	long getMedian(ServerName serverName);
 
+	MedianChain getMedianChain(ServerName serverName);
+
 	long getTicketPrice(ServerName serverName);
 
 	MoneyRanking getMoneyRanking(ServerName serverName);
-
-	//void save(UUID uuid);
 
 	boolean exist(UUID uuid);
 
@@ -36,24 +36,13 @@ public interface HyperingEconomyAPI {
 
 	long getTickets(UUID uuid);
 
-	void setTickets(UUID uuid, long tickets);
-
 	boolean hasTickets(UUID uuid, long threshold);
 
-	void addTickets(UUID uuid, long increase);
+	void addTickets(UUID uuid, int increase);
 
-	void removeTickets(UUID uuid, long decrease);
+	void removeTickets(UUID uuid, int decrease);
 
-	long getTicketsValue(UUID uuid);
+	void buyTickets(ServerName serverName, UUID uuid, int number);
 
-	void setTicketsValue(UUID uuid, long ticketsValue);
-
-	void addTicketsValue(UUID uuid, long increase);
-
-	void removeTicketsValue(UUID uuid, long decrease);
-
-	long getTicketsValuePerTicket(UUID uuid);
-
-	TicketEditer getTicketEditer(ServerName serverName, UUID uuid);
-
+	void cashTickets(ServerName serverName, UUID uuid, int number);
 }
