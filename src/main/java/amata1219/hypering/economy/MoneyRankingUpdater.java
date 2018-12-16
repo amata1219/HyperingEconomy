@@ -8,7 +8,7 @@ public class MoneyRankingUpdater implements Runnable {
 
 	@Override
 	public void run() {
-		for(ServerName serverName : ServerName.values())
+		for(ServerName serverName : Database.getEconomyServers())
 			Database.getDatabase().updateMoneyRanking(serverName);
 	}
 

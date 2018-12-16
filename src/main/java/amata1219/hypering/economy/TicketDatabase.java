@@ -15,7 +15,7 @@ public class TicketDatabase {
 	public static void addTickets(UUID uuid, long time, int increase){
 		Database.putCommand("INSERT INTO " + Database.getDatabaseName() + "." + Database.getTicketDataTableName() + " VALUES ('" + uuid.toString() + "'," + time + "," + increase + ")");
 
-		for(ServerName serverName : ServerName.values())
+		for(ServerName serverName : Database.getEconomyServers())
 			Database.getHyperingEconomyAPI().getMedianChain(serverName).flag();
 	}
 

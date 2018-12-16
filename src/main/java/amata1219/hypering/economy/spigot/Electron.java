@@ -8,6 +8,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import amata1219.hypering.economy.Database;
 import amata1219.hypering.economy.ServerName;
 import net.milkbowl.vault.economy.Economy;
 
@@ -25,7 +26,9 @@ public class Electron extends JavaPlugin {
 
 		saveDefaultConfig();
 
-		serverName = ServerName.valueOf(getConfig().getString("Aliases"));
+		serverName = ServerName.valueOf(getConfig().getString("Aliases").toUpperCase());
+
+		Database.load(getConfig().getString("MySQL.host"), getConfig().getInt("MySQL.port"), getConfig().getString("MySQL.database"), getConfig().getString("MySQL.username"), getConfig().getString("MySQL.password"));
 
 		new Listener(){
 			private Electron electron;
@@ -63,6 +66,8 @@ public class Electron extends JavaPlugin {
 
 	@Override
 	public void onDisable(){
+		Database.close();
+
 		getServer().getServicesManager().unregisterAll(this);
 
 		HandlerList.unregisterAll(this);

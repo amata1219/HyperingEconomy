@@ -62,7 +62,7 @@ public class Nucleus extends Plugin implements Listener {
 
 		});
 
-		Database.load(config.getString("MySQL.host"), config.getInt("MySQL.port"), config.getString("MySQL.database"), config.getString("username"), config.getString("password"));
+		Database.load(config.getString("MySQL.host"), config.getInt("MySQL.port"), config.getString("MySQL.database"), config.getString("MySQL.username"), config.getString("MySQL.password"));
 
 		rankingUpdater = getProxy().getScheduler().schedule(this, new MoneyRankingUpdater(), 0, 5, TimeUnit.MINUTES);
 	}
@@ -113,8 +113,6 @@ public class Nucleus extends Plugin implements Listener {
 	@EventHandler
 	public void onJoin(PostLoginEvent e){
 		ProxiedPlayer player = e.getPlayer();
-		if(!player.getServer().getInfo().getName().equals("main"))
-			return;
 
 		UUID uuid = player.getUniqueId();
 
@@ -123,7 +121,7 @@ public class Nucleus extends Plugin implements Listener {
 		if(!api.exist(uuid)){
 			Database.getDatabase().create(uuid);
 
-			for(ServerName serverName : ServerName.values())
+			for(ServerName serverName : Database.getEconomyServers())
 				api.setMoney(serverName, uuid, api.getMedian(serverName));
 		}
 	}
