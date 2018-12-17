@@ -7,6 +7,8 @@ import org.bukkit.event.server.PluginEnableEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
 import amata1219.hypering.economy.Database;
 import amata1219.hypering.economy.ServerName;
@@ -19,6 +21,8 @@ public class Electron extends JavaPlugin {
 	private static ServerName serverName;
 
 	private static boolean loadedVaultEconomy;
+
+	private BukkitTask rankingUpdater;
 
 	@Override
 	public void onEnable(){
@@ -65,10 +69,22 @@ public class Electron extends JavaPlugin {
 				PluginEnableEvent.getHandlerList().unregister(electron);
 			}
 		}.setElectron(this);
+
+		rankingUpdater = new BukkitRunnable(){
+
+			@Override
+			public void run() {
+				for(ServerName serverName : Database.getEconomyServers())
+					Database.getDatabase().updateMoneyRanking(serverName);
+			}
+
+		}.runTaskTimer(this, 0, 6000);
 	}
 
 	@Override
 	public void onDisable(){
+		rankingUpdater.cancel();
+
 		Database.close();
 
 		getServer().getServicesManager().unregisterAll(this);

@@ -90,6 +90,7 @@ public class Database implements HyperingEconomyAPI {
 		database.ranking.put(serverName, MoneyRanking.load(serverName));
 
 		database.updateMedian(serverName);
+
 	}
 
 	public static void unregisterEconomySerber(ServerName serverName){
@@ -138,28 +139,6 @@ public class Database implements HyperingEconomyAPI {
 		}
 	}
 
-	public static Object getResult(String command, String columnIndex){
-		try(Connection con = Database.database.source.getConnection();
-				PreparedStatement statement = con.prepareStatement(command)){
-			try(ResultSet result = statement.executeQuery()){
-
-				Object obj = null;
-				while(result.next()){
-					obj = result.getObject(columnIndex);
-					break;
-				}
-
-				result.close();
-				return obj;
-			}
-
-		}catch(SQLException e){
-			e.printStackTrace();
-		}
-
-		return null;
-	}
-
 	@Override
 	public void updateMedian(ServerName serverName) {
 		if(!chain.containsKey(serverName))
@@ -170,10 +149,10 @@ public class Database implements HyperingEconomyAPI {
 		List<Long> list = new ArrayList<>();
 
 		try(Connection con = Database.getHikariDataSource().getConnection();
-				PreparedStatement statement = con.prepareStatement("SELECT " + columnIndex + ", uuid FROM " + Database.getDatabaseName() + "." + Database.getPlayerDataTableName() + " WHERE last<=2592000000 AND " + columnIndex + ">0")){
+				PreparedStatement statement = con.prepareStatement("SELECT " + columnIndex + ", uuid FROM HyperingEconomyDatabase.playerdata WHERE last <= 2592000000 AND " + columnIndex + " > 0")){
 			try(ResultSet result = statement.executeQuery()){
 				while(result.next())
-					list.add(result.getLong(columnIndex) + TicketDatabase.getTicketsValue(serverName, result.getString("uuid")));
+					list.add(result.getLong(columnIndex) + getTicketsValue(serverName, result.getString("uuid")));
 
 				result.close();
 			}
@@ -181,11 +160,12 @@ public class Database implements HyperingEconomyAPI {
 			e.printStackTrace();
 		}
 
-		int size = list.size();
-		if(size == 0 || list.isEmpty()){
+		if(list.isEmpty()){
 			median.put(serverName, 5000L);
 		}else{
 			list.sort(Comparator.reverseOrder());
+
+			int size = list.size();
 
 			if(size % 2 == 0)
 				median.put(serverName, list.get(size / 2));
@@ -216,46 +196,46 @@ public class Database implements HyperingEconomyAPI {
 		return ranking.get(serverName);
 	}
 
-	void updateMoneyRanking(ServerName serverName){
+	public void updateMoneyRanking(ServerName serverName){
 		ranking.put(serverName, MoneyRanking.load(serverName));
 	}
 
 	public void create(UUID uuid){
-		putCommand("INSERT INTO " + Database.getDatabaseName() + "." + Database.getPlayerDataTableName() + " VALUES ('" + uuid.toString() + "'," + System.currentTimeMillis() + "," + median.get(ServerName.MAIN) + "," + 5000L + ")");
+		putCommand("INSERT INTO HyperingEconomyDatabase.playerdata VALUES ('" + uuid.toString() + "'," + System.currentTimeMillis() + "," + median.get(ServerName.MAIN) + "," + 5000L + ")");
 	}
 
 	public void delete(UUID uuid){
-		putCommand("DELETE FROM " + Database.getDatabaseName() + "." + Database.getPlayerDataTableName() + " WHERE uuid='" + uuid.toString() + "'");
+		putCommand("DELETE FROM HyperingEconomyDatabase.playerdata WHERE uuid = '" + uuid.toString() + "'");
 	}
 
 	@Override
 	public boolean exist(UUID uuid) {
-		return (long) Getter.get("SELECT COUNT(uuid) AS count FROM " + Database.getDatabaseName() + "." + Database.getPlayerDataTableName() + " WHERE uuid='" + uuid.toString() + "'", "count") == 1;
+		return Getter.getLong("SELECT COUNT(uuid) AS count FROM HyperingEconomyDatabase.playerdata WHERE uuid = '" + uuid.toString() + "'", "count") == 1;
 	}
 
 	@Override
-	public int existSize(){
-		return Long.valueOf((long) Getter.get("SELECT COUNT(uuid) AS count FROM " + Database.getDatabaseName() + "." + Database.getPlayerDataTableName(), "count")).intValue();
+	public long existSize(){
+		return Getter.getLong("SELECT COUNT(uuid) AS count FROM HyperingEconomyDatabase.playerdata", "count");
 	}
 
 	@Override
 	public boolean active(UUID uuid){
-		return (long) Getter.get(uuid, "last") <= 2592000000L;
+		return Getter.getLong(uuid, "last") <= 2592000000L;
 	}
 
 	@Override
-	public int activeSize(){
-		return Long.valueOf((long) Getter.get("SELECT COUNT(uuid) AS count FROM " + Database.getDatabaseName() + "." + Database.getPlayerDataTableName() + " WHERE last<=2592000000", "count")).intValue();
+	public long activeSize(){
+		return Getter.getLong("SELECT COUNT(uuid) AS count FROM HyperingEconomyDatabase.playerdata WHERE last <= 2592000000", "count");
 	}
 
 	@Override
 	public void updateLastPlayed(UUID uuid){
-		Saver.save(uuid, "last", System.currentTimeMillis());
+		Saver.saveLong(uuid, "last", System.currentTimeMillis());
 	}
 
 	@Override
 	public long getMoney(ServerName serverName, UUID uuid) {
-		return (long) Getter.get(uuid, serverName.name().toLowerCase());
+		return Getter.getLong(uuid, serverName.name().toLowerCase());
 	}
 
 	@Override
@@ -265,7 +245,7 @@ public class Database implements HyperingEconomyAPI {
 
 	@Override
 	public void setMoney(ServerName serverName, UUID uuid, long money) {
-		Saver.save(uuid, serverName.name().toLowerCase(), money);
+		Saver.saveLong(uuid, serverName.name().toLowerCase(), money);
 
 		updateMedian(serverName);
 	}
@@ -287,32 +267,116 @@ public class Database implements HyperingEconomyAPI {
 
 	@Override
 	public long getTickets(UUID uuid) {
-		return TicketDatabase.getTickets(uuid);
+		return Getter.getLong("SELECT SUM(number) AS sum FROM HyperingEconomyDatabase.ticketdata WHERE uuid = '" + uuid.toString() + "'", "sum");
 	}
 
 	@Override
 	public boolean hasTickets(UUID uuid, long threshold) {
-		return TicketDatabase.hasTickets(uuid, threshold);
+		return getTickets(uuid) >= threshold;
 	}
 
 	@Override
-	public void addTickets(UUID uuid, int increase) {
-		TicketDatabase.addTickets(uuid, System.nanoTime(), increase);
+	public void addTickets(UUID uuid, long increase) {
+		for(long i = increase; i > 0; i /= Integer.MAX_VALUE)
+			Database.putCommand("INSERT INTO HyperingEconomyDatabase.ticketdata VALUES ('" + uuid.toString() + "'," + System.nanoTime() + "," + i + ")");
+
+		for(ServerName serverName : Database.getEconomyServers())
+			Database.getHyperingEconomyAPI().getMedianChain(serverName).flag();
 	}
 
 	@Override
-	public void removeTickets(UUID uuid, int decrease) {
-		TicketDatabase.removeTickets(uuid, decrease);
+	public void removeTickets(ServerName serverName, UUID uuid, long decrease) {
+		if(!hasTickets(uuid, decrease))
+			return;
+
+		long time = Getter.getLong("SELECT time FROM HyperingEconomyDatabase.ticketdata WHERE uuid = '" + uuid.toString() + "'", "time");
+		int number = Getter.getInt("SELECT number FROM HyperingEconomyDatabase.ticketdata WHERE time = " + time, "number");
+
+		if(number > decrease){
+			Database.putCommand("UPDATE HyperingEconomyDatabase.ticketdata SET number = " + (number - decrease) + " WHERE time = " + time);
+			Database.getHyperingEconomyAPI().updateMedian(serverName);
+			return;
+		}
+
+		Database.putCommand("DELETE FROM HyperingEconomyDatabase.ticketdata WHERE time = " + time);
+
+		if(number < decrease)
+			removeTickets(serverName, uuid, decrease - number);
 	}
 
 	@Override
-	public void buyTickets(ServerName serverName, UUID uuid, int number){
-		TicketDatabase.buyTickets(serverName, uuid, number);
+	public boolean canBuyTickets(ServerName serverName, UUID uuid, long number){
+		HyperingEconomyAPI api = Database.getHyperingEconomyAPI();
+
+		return api.getMoney(serverName, uuid) >= api.getTicketPrice(serverName) * number;
 	}
 
 	@Override
-	public void cashTickets(ServerName serverName, UUID uuid, int number){
-		TicketDatabase.cashTickets(serverName, uuid, number);
+	public void buyTickets(ServerName serverName, UUID uuid, long number){
+		HyperingEconomyAPI api = Database.getHyperingEconomyAPI();
+
+		long price = number * api.getTicketPrice(serverName);
+		if(!api.hasMoney(serverName, uuid, price))
+			return;
+
+		api.getMoneyEditer(serverName, uuid).remove(price);
+		addTickets(uuid, number);
+	}
+
+	@Override
+	public boolean canCashTickets(UUID uuid, long number){
+		return getTickets(uuid) >= number;
+	}
+
+	@Override
+	public void cashTickets(ServerName serverName, UUID uuid, long number){
+		if(!hasTickets(uuid, number) || number <= 0)
+			return;
+
+		long time = Getter.getLong("SELECT time FROM HyperingEconomyDatabase.ticketdata WHERE uuid = '" + uuid.toString() + "'", "time");
+		int l = Getter.getInt("SELECT number FROM HyperingEconomyDatabase.ticketdata WHERE time = " + time, "number");
+
+		HyperingEconomyAPI api = Database.getHyperingEconomyAPI();
+
+		if(l > number){
+			Database.putCommand("UPDATE HyperingEconomyDatabase.ticketdata SET number = " + (l - number) + " WHERE time = " + time);
+			api.getMoneyEditer(serverName, uuid).add(Double.valueOf(api.getMedianChain(serverName).getTicketPrice(time) / 10D * 9D).longValue() * number);
+			Database.getHyperingEconomyAPI().updateMedian(serverName);
+			return;
+		}
+
+		Database.putCommand("DELETE FROM HyperingEconomyDatabase.ticketdata WHERE time = " + time);
+		api.getMoneyEditer(serverName, uuid).add(Double.valueOf(api.getMedianChain(serverName).getTicketPrice(time) / 10D * 9D).longValue() * l);
+
+		if(l < number)
+			cashTickets(serverName, uuid, number - l);
+	}
+
+	@Override
+	public long getTicketsValue(ServerName serverName, UUID uuid){
+		return getTicketsValue(serverName, uuid.toString());
+	}
+
+	public long getTicketsValue(ServerName serverName, String uuid){
+		HyperingEconomyAPI api = Database.getHyperingEconomyAPI();
+		MedianChain chain = api.getMedianChain(serverName);
+
+		long sum = 0;
+
+		try(Connection con = Database.getHikariDataSource().getConnection();
+				PreparedStatement statement = con.prepareStatement("SELECT time, number FROM HyperingEconomyDatabase.ticketdata WHERE uuid = '" + uuid.toString() + "'")){
+			try(ResultSet result = statement.executeQuery()){
+				while(result.next())
+					sum += chain.getTicketPrice(result.getLong("time")) * result.getInt("number");
+
+				result.close();
+			}
+
+		}catch(SQLException e){
+			e.printStackTrace();
+		}
+
+		return sum;
 	}
 
 }

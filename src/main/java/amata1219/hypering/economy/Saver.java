@@ -4,8 +4,8 @@ import java.util.UUID;
 
 public class Saver {
 
-	public static void save(UUID uuid, String columnIndex, Object value){
-		Database.putCommand("UPDATE " + Database.getDatabaseName() + "." + Database.getPlayerDataTableName() + " SET " + columnIndex + "=" + value + " WHERE uuid='" + uuid.toString() + "'");
+	public static void saveLong(UUID uuid, String columnIndex, long value){
+		Database.putCommand("UPDATE HyperingEconomyDatabase.playerdata SET " + columnIndex + " = " + value + " WHERE uuid = '" + uuid.toString() + "'");
 	}
 
 }

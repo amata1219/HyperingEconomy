@@ -8,6 +8,7 @@ public class MoneyEditer {
 	private UUID uuid;
 
 	public MoneyEditer(ServerName serverName, UUID uuid){
+		this.serverName = serverName;
 		this.uuid = uuid;
 	}
 

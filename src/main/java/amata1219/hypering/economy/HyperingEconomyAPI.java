@@ -16,11 +16,11 @@ public interface HyperingEconomyAPI {
 
 	boolean exist(UUID uuid);
 
-	int existSize();
+	long existSize();
 
 	boolean active(UUID uuid);
 
-	int activeSize();
+	long activeSize();
 
 	void updateLastPlayed(UUID uuid);
 
@@ -40,11 +40,17 @@ public interface HyperingEconomyAPI {
 
 	boolean hasTickets(UUID uuid, long threshold);
 
-	void addTickets(UUID uuid, int increase);
+	void addTickets(UUID uuid, long increase);
 
-	void removeTickets(UUID uuid, int decrease);
+	void removeTickets(ServerName serverName, UUID uuid, long decrease);
 
-	void buyTickets(ServerName serverName, UUID uuid, int number);
+	boolean canBuyTickets(ServerName serverName, UUID uuid, long number);
 
-	void cashTickets(ServerName serverName, UUID uuid, int number);
+	void buyTickets(ServerName serverName, UUID uuid, long number);
+
+	boolean canCashTickets(UUID uuid, long number);
+
+	void cashTickets(ServerName serverName, UUID uuid, long number);
+
+	long getTicketsValue(ServerName serverName, UUID uuid);
 }

@@ -18,11 +18,14 @@ public class MedianChain {
 
 		chain.table = serverName.name().toLowerCase() + "_medianchain";
 
+		chain.latest = Getter.getLong("SELECT COUNT(time) AS count FROM HyperingEconomyDatabase." + chain.table, "count") > 0 ? chain.getMedian(System.nanoTime()) : 5000L;
+
 		return chain;
 	}
 
 	public long getMedian(long time){
-		return (long) Getter.get("SELECT median FROM " + Database.getDatabaseName() + "." + table + " WHERE time <= " + time + " ORDER BY time DESC ", "median");
+		long l = Getter.getLong("SELECT median FROM HyperingEconomyDatabase." + table + " WHERE time <= " + time + " ORDER BY time DESC", "median");
+		return l == 0 ? 5000L : (long) l;
 	}
 
 	public long getTicketPrice(long time){
@@ -49,6 +52,7 @@ public class MedianChain {
 
 		time = System.nanoTime();
 		latest = median;
+		flag = false;
 	}
 
 }

@@ -16,7 +16,6 @@ import com.google.common.io.ByteStreams;
 
 import amata1219.hypering.economy.Database;
 import amata1219.hypering.economy.HyperingEconomyAPI;
-import amata1219.hypering.economy.MoneyRankingUpdater;
 import amata1219.hypering.economy.ServerName;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
@@ -67,7 +66,15 @@ public class Nucleus extends Plugin implements Listener {
 
 		Database.registerEconomyServer(ServerName.MAIN);
 
-		rankingUpdater = getProxy().getScheduler().schedule(this, new MoneyRankingUpdater(), 0, 5, TimeUnit.MINUTES);
+		rankingUpdater = getProxy().getScheduler().schedule(this, new Runnable(){
+
+			@Override
+			public void run() {
+				for(ServerName serverName : Database.getEconomyServers())
+					Database.getDatabase().updateMoneyRanking(serverName);
+			}
+
+		}, 0, 5, TimeUnit.MINUTES);
 	}
 
 	@Override
