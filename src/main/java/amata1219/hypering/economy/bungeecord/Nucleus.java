@@ -23,6 +23,7 @@ import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.PostLoginEvent;
+import net.md_5.bungee.api.event.ServerDisconnectEvent;
 import net.md_5.bungee.api.plugin.Command;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
@@ -63,6 +64,8 @@ public class Nucleus extends Plugin implements Listener {
 		});
 
 		Database.load(config.getString("MySQL.host"), config.getInt("MySQL.port"), config.getString("MySQL.database"), config.getString("MySQL.username"), config.getString("MySQL.password"));
+
+		Database.registerEconomyServer(ServerName.MAIN);
 
 		rankingUpdater = getProxy().getScheduler().schedule(this, new MoneyRankingUpdater(), 0, 5, TimeUnit.MINUTES);
 	}
@@ -124,6 +127,11 @@ public class Nucleus extends Plugin implements Listener {
 			for(ServerName serverName : Database.getEconomyServers())
 				api.setMoney(serverName, uuid, api.getMedian(serverName));
 		}
+	}
+
+	@EventHandler
+	public void onQuit(ServerDisconnectEvent e){
+		Database.getHyperingEconomyAPI().updateLastPlayed(e.getPlayer().getUniqueId());
 	}
 
 }

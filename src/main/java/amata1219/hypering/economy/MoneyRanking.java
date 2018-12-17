@@ -1,5 +1,9 @@
 package amata1219.hypering.economy;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,11 +25,20 @@ public class MoneyRanking {
 		MoneyRanking ranking = new MoneyRanking();
 
 		List<UUID> uuids = new ArrayList<>();
-		for(String key : new Getter<String>().getList("SELECT uuid FROM " + Database.getDatabaseName() + "." + Database.getPlayerDataTableName(), "uuid"))
-			uuids.add(UUID.fromString(key));
+		try(Connection con = Database.getHikariDataSource().getConnection();
+				PreparedStatement statement = con.prepareStatement("SELECT uuid FROM " + Database.getDatabaseName() + "." + Database.getPlayerDataTableName())){
+			try(ResultSet result = statement.executeQuery()){
+				while(result.next())
+					uuids.add(UUID.fromString(result.getString("uuid")));
+
+				result.close();
+			}
+		}catch(SQLException e){
+			e.printStackTrace();
+		}
 
 		String columnIndex = serverName.name().toLowerCase();
-		List<Long> money = new Getter<Long>().getList("SELECT " + columnIndex + " FROM " + Database.getDatabaseName() + "." + Database.getPlayerDataTableName(), columnIndex);
+		List<Long> money = Getter.getList("SELECT " + columnIndex + " FROM " + Database.getDatabaseName() + "." + Database.getPlayerDataTableName(), columnIndex);
 
 		ranking.quickSort(uuids, money, 0, uuids.size() - 1, true);
 

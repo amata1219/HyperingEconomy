@@ -18,7 +18,7 @@ public class Electron extends JavaPlugin {
 
 	private static ServerName serverName;
 
-	private static boolean loadVaultEconomy;
+	private static boolean loadedVaultEconomy;
 
 	@Override
 	public void onEnable(){
@@ -29,6 +29,9 @@ public class Electron extends JavaPlugin {
 		serverName = ServerName.valueOf(getConfig().getString("Aliases").toUpperCase());
 
 		Database.load(getConfig().getString("MySQL.host"), getConfig().getInt("MySQL.port"), getConfig().getString("MySQL.database"), getConfig().getString("MySQL.username"), getConfig().getString("MySQL.password"));
+
+		if(serverName == ServerName.MAIN)
+			Database.registerEconomyServer(serverName);
 
 		new Listener(){
 			private Electron electron;
@@ -86,7 +89,7 @@ public class Electron extends JavaPlugin {
 	}
 
 	public static boolean isLoadedVaultEconomy(){
-		return loadVaultEconomy;
+		return loadedVaultEconomy;
 	}
 
 }

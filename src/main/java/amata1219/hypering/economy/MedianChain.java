@@ -22,7 +22,7 @@ public class MedianChain {
 	}
 
 	public long getMedian(long time){
-		return new Getter<Long>().get("SELECT median FROM " + Database.getDatabaseName() + "." + table + " WHERE time <= " + time + " ORDER BY time DESC ", "median");
+		return (long) Getter.get("SELECT median FROM " + Database.getDatabaseName() + "." + table + " WHERE time <= " + time + " ORDER BY time DESC ", "median");
 	}
 
 	public long getTicketPrice(long time){
