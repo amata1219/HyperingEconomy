@@ -22,6 +22,7 @@ public class Getter {
 				}
 
 				result.close();
+				statement.close();
 			}
 
 		}catch(SQLException e){
@@ -43,6 +44,7 @@ public class Getter {
 				}
 
 				result.close();
+				statement.close();
 			}
 
 		}catch(SQLException e){
@@ -64,6 +66,7 @@ public class Getter {
 				}
 
 				result.close();
+				statement.close();
 			}
 
 		}catch(SQLException e){
@@ -85,6 +88,7 @@ public class Getter {
 				}
 
 				result.close();
+				statement.close();
 			}
 
 		}catch(SQLException e){
@@ -104,6 +108,7 @@ public class Getter {
 					list.add(result.getLong(columnIndex));
 
 				result.close();
+				statement.close();
 			}
 		}catch(SQLException e){
 			e.printStackTrace();

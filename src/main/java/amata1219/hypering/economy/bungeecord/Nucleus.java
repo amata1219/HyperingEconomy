@@ -46,6 +46,8 @@ public class Nucleus extends Plugin implements Listener {
 
 		saveDefaultConfig();
 
+		//getProxy().registerChannel("BungeeCord");
+
 		getProxy().getPluginManager().registerListener(this, this);
 
 		getProxy().getPluginManager().registerCommand(this, new Command("admin", "hypering.economy.admin"){
@@ -58,6 +60,96 @@ public class Nucleus extends Plugin implements Listener {
 				}
 
 				//ServerName name = ServerName.valueOf(((ProxiedPlayer) sender).getServer().getInfo().getName());
+				/*if(args.length == 0){
+					sender.sendMessage(new TextComponent(ChatColor.RED + "/admin fixmedian [true/false] [median]"));
+					return;
+				}else if(args[0].equalsIgnoreCase("fixmedian")){
+					if(args.length == 1){
+						sender.sendMessage(new TextComponent(ChatColor.RED + "/admin fixmedian [true/false] [median]"));
+						return;
+					}else if(args[1].equalsIgnoreCase("true")){
+						if(args.length == 2){
+							sender.sendMessage(new TextComponent(ChatColor.RED + "/admin fixmedian true [median]"));
+							return;
+						}
+
+						long l = 0L;
+						try{
+							l = Long.valueOf(args[1]);
+						}catch(NumberFormatException e){
+							sender.sendMessage(new TextComponent(ChatColor.RED + "中央値は半角数字で指定して下さい。。"));
+							return;
+						}
+
+						config.set("FixMedian.Enable", true);
+						config.set("FixMedian.Median", l);
+
+						try {
+							ConfigurationProvider.getProvider(YamlConfiguration.class).save(config, new File(getDataFolder(), "bcside_config.yml"));
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+
+
+						Database.fixMedian(l);
+
+						Database.getEconomyServers().forEach(serverName -> Database.getHyperingEconomyAPI().updateMedian(serverName));
+
+						ByteArrayDataOutput output = ByteStreams.newDataOutput();
+						ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+						DataOutputStream stream = new DataOutputStream(bytes);
+
+						try{
+							stream.writeUTF("FixMedian");
+							stream.writeUTF(String.valueOf(l));
+							stream.writeShort(123);
+						}catch(IOException e){
+							e.printStackTrace();
+						}
+
+						output.writeShort(bytes.toByteArray().length);
+						output.write(bytes.toByteArray());
+
+						getProxy().getServerInfo("main").sendData("BungeeCord", bytes.toByteArray());
+
+						sender.sendMessage(new TextComponent(ChatColor.AQUA + "中央値を [" + l + "] に固定しました。"));
+						return;
+					}else if(args[1].equalsIgnoreCase("false")){
+						config.set("FixMedian.Enable", false);
+						config.set("FixMedian.Median", 100000L);
+
+						try {
+							ConfigurationProvider.getProvider(YamlConfiguration.class).save(config, new File(getDataFolder(), "bcside_config.yml"));
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+
+						Database.unfixMedian();
+
+						Database.getEconomyServers().forEach(serverName -> Database.getHyperingEconomyAPI().updateMedian(serverName));
+
+						ByteArrayDataOutput output = ByteStreams.newDataOutput();
+						ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+						DataOutputStream stream = new DataOutputStream(bytes);
+
+						try{
+							stream.writeUTF("FixMedian");
+							stream.writeUTF("false");
+							stream.writeShort(123);
+						}catch(IOException e){
+							e.printStackTrace();
+						}
+
+						output.writeShort(bytes.toByteArray().length);
+						output.write(bytes.toByteArray());
+
+						getProxy().getServerInfo("main").sendData("BungeeCord", bytes.toByteArray());
+
+						sender.sendMessage(new TextComponent(ChatColor.AQUA + "中央値の固定を解除しました。"));
+						return;
+					}
+
+				}*/
 			}
 
 		});
@@ -80,6 +172,8 @@ public class Nucleus extends Plugin implements Listener {
 	@Override
 	public void onDisable(){
 		rankingUpdater.cancel();
+
+		//getProxy().unregisterChannel("BungeeCord");
 
 		Database.close();
 	}
@@ -128,12 +222,8 @@ public class Nucleus extends Plugin implements Listener {
 
 		HyperingEconomyAPI api = Database.getHyperingEconomyAPI();
 
-		if(!api.exist(uuid)){
+		if(!api.exist(uuid))
 			Database.getDatabase().create(uuid);
-
-			for(ServerName serverName : Database.getEconomyServers())
-				api.setMoney(serverName, uuid, api.getMedian(serverName));
-		}
 	}
 
 	@EventHandler

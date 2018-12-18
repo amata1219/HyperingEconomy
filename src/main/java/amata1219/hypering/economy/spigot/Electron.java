@@ -30,6 +30,9 @@ public class Electron extends JavaPlugin {
 
 		saveDefaultConfig();
 
+		//getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
+		//getServer().getMessenger().registerIncomingPluginChannel(this, "BungeeCord", this);
+
 		serverName = ServerName.valueOf(getConfig().getString("Aliases").toUpperCase());
 
 		Database.load(getConfig().getString("MySQL.host"), getConfig().getInt("MySQL.port"), getConfig().getString("MySQL.database"), getConfig().getString("MySQL.username"), getConfig().getString("MySQL.password"));
@@ -85,6 +88,9 @@ public class Electron extends JavaPlugin {
 	public void onDisable(){
 		rankingUpdater.cancel();
 
+		//getServer().getMessenger().unregisterOutgoingPluginChannel(this, "BungeeCord");
+		//getServer().getMessenger().unregisterIncomingPluginChannel(this, "BungeeCord", this);
+
 		Database.close();
 
 		getServer().getServicesManager().unregisterAll(this);
@@ -107,5 +113,36 @@ public class Electron extends JavaPlugin {
 	public static boolean isLoadedVaultEconomy(){
 		return loadedVaultEconomy;
 	}
+
+	/*@Override
+	public void onPluginMessageReceived(String tag, Player player, byte[] data) {
+		if(!tag.equals("BungeeCord"))
+			return;
+
+		DataInputStream stream = new DataInputStream(new ByteArrayInputStream(data));
+
+		String s = null;
+		try {
+			s = stream.readUTF();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		if(!s.equals("FixMedian"))
+			return;
+
+		try {
+			s = stream.readUTF();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		if(s.equals("false"))
+			Database.unfixMedian();
+		else
+			Database.fixMedian(Long.valueOf(s));
+
+		Database.getEconomyServers().forEach(serverName -> Database.getHyperingEconomyAPI().updateMedian(serverName));
+	}*/
 
 }

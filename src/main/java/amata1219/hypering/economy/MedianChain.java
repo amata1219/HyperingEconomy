@@ -2,6 +2,8 @@ package amata1219.hypering.economy;
 
 public class MedianChain {
 
+	public static final long STONE = 100000L;
+
 	private String table;
 
 	private boolean flag;
@@ -18,14 +20,16 @@ public class MedianChain {
 
 		chain.table = serverName.name().toLowerCase() + "_medianchain";
 
-		chain.latest = Getter.getLong("SELECT COUNT(time) AS count FROM HyperingEconomyDatabase." + chain.table, "count") > 0 ? chain.getMedian(System.nanoTime()) : 5000L;
+		if(Getter.getLong("SELECT COUNT(time) AS count FROM HyperingEconomyDatabase." + chain.table, "count") == 0)
+			Database.putCommand("INSERT INTO " + Database.getDatabaseName() + "." + chain.table + " VALUES (" + System.nanoTime() + "," + STONE + ")");
+
+		chain.latest = chain.getMedian(System.nanoTime());
 
 		return chain;
 	}
 
 	public long getMedian(long time){
-		long l = Getter.getLong("SELECT median FROM HyperingEconomyDatabase." + table + " WHERE time <= " + time + " ORDER BY time DESC", "median");
-		return l == 0 ? 5000L : (long) l;
+		return Getter.getLong("SELECT median FROM HyperingEconomyDatabase." + table + " WHERE time <= " + time + " ORDER BY time DESC", "median");
 	}
 
 	public long getTicketPrice(long time){

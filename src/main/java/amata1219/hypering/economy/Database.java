@@ -25,6 +25,9 @@ public class Database implements HyperingEconomyAPI {
 
 	private static Database database;
 
+	//private static boolean fmEnable = false;
+	//private static long fmMedian = 100000L;
+
 	private HikariDataSource source;
 
 	private String databaseName;
@@ -68,7 +71,6 @@ public class Database implements HyperingEconomyAPI {
 		config.addDataSourceProperty("user", userName);
 		config.addDataSourceProperty("password", password);
 
-		config.setInitializationFailFast(true);
 		config.setConnectionInitSql("SELECT 1");
 
 		database.source = new HikariDataSource(config);
@@ -134,15 +136,41 @@ public class Database implements HyperingEconomyAPI {
 		try(Connection con = Database.database.source.getConnection();
 				PreparedStatement statement = con.prepareStatement(command)){
 			statement.executeUpdate();
+			statement.close();
 		}catch(SQLException e){
 			e.printStackTrace();
 		}
 	}
 
+	/*public static void fixMedian(long median){
+		fmEnable = true;
+		fmMedian = median;
+	}
+
+	public static void unfixMedian(){
+		fmEnable = false;
+		fmMedian = 100000L;
+	}
+
+	public static boolean isFixMedian(){
+		return fmEnable;
+	}
+
+	public static long getFixedMedian(){
+		return fmMedian;
+	}*/
+
 	@Override
 	public void updateMedian(ServerName serverName) {
 		if(!chain.containsKey(serverName))
 			return;
+
+		/*if(fmEnable){
+			median.put(serverName, fmMedian);
+
+			chain.get(serverName).update(median.get(serverName));
+			return;
+		}*/
 
 		String columnIndex = serverName.name().toLowerCase();
 
@@ -155,17 +183,18 @@ public class Database implements HyperingEconomyAPI {
 					list.add(result.getLong(columnIndex) + getTicketsValue(serverName, result.getString("uuid")));
 
 				result.close();
+				statement.close();
 			}
 		}catch(SQLException e){
 			e.printStackTrace();
 		}
 
-		if(list.isEmpty()){
-			median.put(serverName, 5000L);
+		int size = list.size();
+
+		if(size <= 10){
+			median.put(serverName, MedianChain.STONE);
 		}else{
 			list.sort(Comparator.reverseOrder());
-
-			int size = list.size();
 
 			if(size % 2 == 0)
 				median.put(serverName, list.get(size / 2));
@@ -201,7 +230,7 @@ public class Database implements HyperingEconomyAPI {
 	}
 
 	public void create(UUID uuid){
-		putCommand("INSERT INTO HyperingEconomyDatabase.playerdata VALUES ('" + uuid.toString() + "'," + System.currentTimeMillis() + "," + median.get(ServerName.MAIN) + "," + 5000L + ")");
+		putCommand("INSERT INTO HyperingEconomyDatabase.playerdata VALUES ('" + uuid.toString() + "'," + System.currentTimeMillis() + "," + 0L + "," + 0L + ")");
 	}
 
 	public void delete(UUID uuid){
@@ -370,6 +399,7 @@ public class Database implements HyperingEconomyAPI {
 					sum += chain.getTicketPrice(result.getLong("time")) * result.getInt("number");
 
 				result.close();
+				statement.close();
 			}
 
 		}catch(SQLException e){
