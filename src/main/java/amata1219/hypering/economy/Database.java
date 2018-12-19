@@ -25,9 +25,6 @@ public class Database implements HyperingEconomyAPI {
 
 	private static Database database;
 
-	//private static boolean fmEnable = false;
-	//private static long fmMedian = 100000L;
-
 	private HikariDataSource source;
 
 	private String databaseName;
@@ -142,42 +139,17 @@ public class Database implements HyperingEconomyAPI {
 		}
 	}
 
-	/*public static void fixMedian(long median){
-		fmEnable = true;
-		fmMedian = median;
-	}
-
-	public static void unfixMedian(){
-		fmEnable = false;
-		fmMedian = 100000L;
-	}
-
-	public static boolean isFixMedian(){
-		return fmEnable;
-	}
-
-	public static long getFixedMedian(){
-		return fmMedian;
-	}*/
-
 	@Override
 	public void updateMedian(ServerName serverName) {
 		if(!chain.containsKey(serverName))
 			return;
-
-		/*if(fmEnable){
-			median.put(serverName, fmMedian);
-
-			chain.get(serverName).update(median.get(serverName));
-			return;
-		}*/
 
 		String columnIndex = serverName.name().toLowerCase();
 
 		List<Long> list = new ArrayList<>();
 
 		try(Connection con = Database.getHikariDataSource().getConnection();
-				PreparedStatement statement = con.prepareStatement("SELECT " + columnIndex + ", uuid FROM HyperingEconomyDatabase.playerdata WHERE last <= 2592000000 AND " + columnIndex + " > 0")){
+				PreparedStatement statement = con.prepareStatement("SELECT " + columnIndex + ", uuid FROM HyperingEconomyDatabase.playerdata WHERE last <= 2592000000 AND " + columnIndex + " >= 500")){
 			try(ResultSet result = statement.executeQuery()){
 				while(result.next())
 					list.add(result.getLong(columnIndex) + getTicketsValue(serverName, result.getString("uuid")));
@@ -191,15 +163,24 @@ public class Database implements HyperingEconomyAPI {
 
 		int size = list.size();
 
-		if(size <= 10){
+		MedianChain mc = chain.get(serverName);
+
+		if(size < 10){
 			median.put(serverName, MedianChain.STONE);
+			mc.setFix(true);
 		}else{
 			list.sort(Comparator.reverseOrder());
 
-			if(size % 2 == 0)
-				median.put(serverName, list.get(size / 2));
-			else
-				median.put(serverName, list.get(size / 2));
+			long m = list.get(size / 2);
+
+			if(m < 5000){
+				median.put(serverName, MedianChain.STONE);
+				mc.setFix(true);
+			}else{
+				median.put(serverName, m);
+				if(mc.isFix())
+					mc.setFix(false);
+			}
 		}
 
 		chain.get(serverName).update(median.get(serverName));
@@ -260,6 +241,11 @@ public class Database implements HyperingEconomyAPI {
 	@Override
 	public void updateLastPlayed(UUID uuid){
 		Saver.saveLong(uuid, "last", System.currentTimeMillis());
+	}
+
+	@Override
+	public long getLastPlayed(UUID uuid){
+		return Getter.getLong(uuid, "last");
 	}
 
 	@Override

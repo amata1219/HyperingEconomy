@@ -6,6 +6,8 @@ public class MedianChain {
 
 	private String table;
 
+	private boolean fix;
+
 	private boolean flag;
 
 	private long time;
@@ -34,6 +36,14 @@ public class MedianChain {
 
 	public long getTicketPrice(long time){
 		return getMedian(time) / 1000;
+	}
+
+	public void setFix(boolean fix){
+		this.fix = fix;
+	}
+
+	public boolean isFix(){
+		return fix;
 	}
 
 	public void flag(){

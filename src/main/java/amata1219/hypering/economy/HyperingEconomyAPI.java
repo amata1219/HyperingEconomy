@@ -24,6 +24,8 @@ public interface HyperingEconomyAPI {
 
 	void updateLastPlayed(UUID uuid);
 
+	long getLastPlayed(UUID uuid);
+
 	long getMoney(ServerName serverName, UUID uuid);
 
 	boolean hasMoney(ServerName serverName, UUID uuid, long threshold);

@@ -59,6 +59,9 @@ public class MoneyRanking {
 	}
 
 	public int getRank(UUID uuid){
+		if(!ranking.containsValue(uuid))
+			return ranking.size();
+
 		return ranking.inverse().get(uuid);
 	}
 
