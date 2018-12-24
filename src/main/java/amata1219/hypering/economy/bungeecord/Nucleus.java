@@ -9,6 +9,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -52,12 +59,52 @@ public class Nucleus extends Plugin implements Listener {
 
 			@Override
 			public void execute(CommandSender sender, String[] args) {
-				if(!(sender instanceof ProxiedPlayer)){
+				/*if(!(sender instanceof ProxiedPlayer)){
 					sender.sendMessage(new TextComponent(ChatColor.RED + "ゲーム内から実行して下さい。"));
 					return;
 				}
 
-				//ServerName name = ServerName.valueOf(((ProxiedPlayer) sender).getServer().getInfo().getName());
+				ServerName name = ServerName.valueOf(((ProxiedPlayer) sender).getServer().getInfo().getName());*/
+
+				if(args.length == 0){
+
+				}else if(args[0].equalsIgnoreCase("median")){
+					sender.sendMessage(new TextComponent(ChatColor.AQUA + "メインサーバーの中央値: " + Database.getHyperingEconomyAPI().getMedian(ServerName.MAIN)));
+					sender.sendMessage(new TextComponent(ChatColor.AQUA + "固定されているか: " + Database.getHyperingEconomyAPI().getMedianChain(ServerName.MAIN).isFix()));
+				}else if(args[0].equalsIgnoreCase("demo")){
+					ServerName serverName = ServerName.MAIN;
+
+
+					String columnIndex = serverName.name().toLowerCase();
+
+					List<Long> list = new ArrayList<>();
+
+					try(Connection con = Database.getHikariDataSource().getConnection();
+							PreparedStatement statement = con.prepareStatement("SELECT " + columnIndex + ", uuid FROM HyperingEconomyDatabase.playerdata WHERE last >= " + (System.currentTimeMillis() - 2592000000L) + " AND " + columnIndex + " >= 500")){
+						try(ResultSet result = statement.executeQuery()){
+							while(result.next())
+								list.add(result.getLong(columnIndex) + Database.getTicketsValue(serverName, result.getString("uuid")));
+
+							result.close();
+							statement.close();
+						}
+					}catch(SQLException e){
+						e.printStackTrace();
+					}
+
+					int size = list.size();
+					if(list.isEmpty()){
+						sender.sendMessage(new TextComponent(ChatColor.AQUA + "条件を満たしたプレイヤーデータがありません。"));
+						return;
+					}
+
+					list.sort(Comparator.reverseOrder());
+
+					long m = list.get(size / 2);
+
+					sender.sendMessage(new TextComponent(ChatColor.AQUA + "デモ計算結果: " + m));
+					sender.sendMessage(new TextComponent(ChatColor.AQUA + "有効プレイヤーデータ数: " + size));
+				}
 			}
 
 		});

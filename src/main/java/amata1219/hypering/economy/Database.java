@@ -149,7 +149,7 @@ public class Database implements HyperingEconomyAPI {
 		List<Long> list = new ArrayList<>();
 
 		try(Connection con = Database.getHikariDataSource().getConnection();
-				PreparedStatement statement = con.prepareStatement("SELECT " + columnIndex + ", uuid FROM HyperingEconomyDatabase.playerdata WHERE last <= 2592000000 AND " + columnIndex + " >= 500")){
+				PreparedStatement statement = con.prepareStatement("SELECT " + columnIndex + ", uuid FROM HyperingEconomyDatabase.playerdata WHERE last >= " + (System.currentTimeMillis() - 2592000000L) + " AND " + columnIndex + " >= 500")){
 			try(ResultSet result = statement.executeQuery()){
 				while(result.next())
 					list.add(result.getLong(columnIndex) + getTicketsValue(serverName, result.getString("uuid")));
@@ -230,12 +230,12 @@ public class Database implements HyperingEconomyAPI {
 
 	@Override
 	public boolean active(UUID uuid){
-		return Getter.getLong(uuid, "last") <= 2592000000L;
+		return Getter.getLong(uuid, "last") >= System.currentTimeMillis() - 2592000000L;
 	}
 
 	@Override
 	public long activeSize(){
-		return Getter.getLong("SELECT COUNT(uuid) AS count FROM HyperingEconomyDatabase.playerdata WHERE last <= 2592000000", "count");
+		return Getter.getLong("SELECT COUNT(uuid) AS count FROM HyperingEconomyDatabase.playerdata WHERE last >= " + (System.currentTimeMillis() -  2592000000L), "count");
 	}
 
 	@Override
@@ -372,7 +372,7 @@ public class Database implements HyperingEconomyAPI {
 		return getTicketsValue(serverName, uuid.toString());
 	}
 
-	public long getTicketsValue(ServerName serverName, String uuid){
+	public static long getTicketsValue(ServerName serverName, String uuid){
 		HyperingEconomyAPI api = Database.getHyperingEconomyAPI();
 		MedianChain chain = api.getMedianChain(serverName);
 
