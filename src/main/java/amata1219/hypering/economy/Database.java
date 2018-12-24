@@ -21,6 +21,7 @@ public class Database implements HyperingEconomyAPI {
 	//create table HyperingEconomyDatabase.playerdata(uuid varchar(36), last bigint, main bigint, pata bigint);
 	//create table HyperingEconomyDatabase.ticketdata(uuid varchar(36), time bigint, number int);
 	//create table HyperingEconomyDatabase.main_medianchain(time bigint, median bigint);
+	//ALTER TABLE main_medianchain ADD INDEX main_medianchain_index(time, median);
 	//2592000000
 
 	private static Database database;
