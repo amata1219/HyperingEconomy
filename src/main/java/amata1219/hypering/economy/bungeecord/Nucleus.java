@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 import com.google.common.io.ByteStreams;
 
@@ -33,7 +32,6 @@ import net.md_5.bungee.api.event.ServerDisconnectEvent;
 import net.md_5.bungee.api.plugin.Command;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
-import net.md_5.bungee.api.scheduler.ScheduledTask;
 import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.config.ConfigurationProvider;
 import net.md_5.bungee.config.YamlConfiguration;
@@ -44,8 +42,6 @@ public class Nucleus extends Plugin implements Listener {
 	private static Nucleus plugin;
 
 	private Configuration config;
-
-	private ScheduledTask rankingUpdater;
 
 	@Override
 	public void onEnable(){
@@ -112,22 +108,10 @@ public class Nucleus extends Plugin implements Listener {
 		Database.load(config.getString("MySQL.host"), config.getInt("MySQL.port"), config.getString("MySQL.database"), config.getString("MySQL.username"), config.getString("MySQL.password"));
 
 		Database.registerEconomyServer(ServerName.MAIN);
-
-		rankingUpdater = getProxy().getScheduler().schedule(this, new Runnable(){
-
-			@Override
-			public void run() {
-				for(ServerName serverName : Database.getEconomyServers())
-					Database.getDatabase().updateMoneyRanking(serverName);
-			}
-
-		}, 0, 5, TimeUnit.MINUTES);
 	}
 
 	@Override
 	public void onDisable(){
-		rankingUpdater.cancel();
-
 		Database.close();
 	}
 

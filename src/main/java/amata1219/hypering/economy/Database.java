@@ -35,7 +35,6 @@ public class Database implements HyperingEconomyAPI {
 
 	private HashMap<ServerName, MedianChain> chain = new HashMap<>();
 	private HashMap<ServerName, Long> median = new HashMap<>();
-	private HashMap<ServerName, MoneyRanking> ranking = new HashMap<>();
 
 	private Database(){
 
@@ -87,7 +86,6 @@ public class Database implements HyperingEconomyAPI {
 	public static void registerEconomyServer(ServerName serverName){
 		database.chain.put(serverName, MedianChain.load(serverName));
 		database.median.put(serverName, 5000L);
-		database.ranking.put(serverName, MoneyRanking.load(serverName));
 
 		database.updateMedian(serverName);
 
@@ -96,7 +94,6 @@ public class Database implements HyperingEconomyAPI {
 	public static void unregisterEconomySerber(ServerName serverName){
 		database.chain.remove(serverName);
 		database.median.remove(serverName);
-		database.ranking.remove(serverName);
 	}
 
 	public static Set<ServerName> getEconomyServers(){
@@ -200,15 +197,6 @@ public class Database implements HyperingEconomyAPI {
 	@Override
 	public long getTicketPrice(ServerName serverName){
 		return getMedian(serverName) / 1000L;
-	}
-
-	@Override
-	public MoneyRanking getMoneyRanking(ServerName serverName){
-		return ranking.get(serverName);
-	}
-
-	public void updateMoneyRanking(ServerName serverName){
-		ranking.put(serverName, MoneyRanking.load(serverName));
 	}
 
 	public void create(UUID uuid){

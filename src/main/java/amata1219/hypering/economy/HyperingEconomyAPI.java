@@ -12,8 +12,6 @@ public interface HyperingEconomyAPI {
 
 	long getTicketPrice(ServerName serverName);
 
-	MoneyRanking getMoneyRanking(ServerName serverName);
-
 	boolean exist(UUID uuid);
 
 	long existSize();
