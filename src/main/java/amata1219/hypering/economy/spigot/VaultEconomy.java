@@ -22,7 +22,7 @@ public class VaultEconomy implements Economy {
 
 	private BukkitTask collector;
 
-	private HashMap<UUID, Long> map = new HashMap<>();
+	public final static HashMap<UUID, Long> map = new HashMap<>();
 
 	private VaultEconomy(){
 
@@ -35,9 +35,9 @@ public class VaultEconomy implements Economy {
 
 			@Override
 			public void run(){
-				CollectedEvent event = new CollectedEvent(instance.map);
+				CollectedEvent event = new CollectedEvent(VaultEconomy.map);
 				Bukkit.getPluginManager().callEvent(event);
-				instance.map.clear();
+				map.clear();
 			}
 
 		}.runTaskTimer(Electron.getPlugin(), 36000, 36000L);
