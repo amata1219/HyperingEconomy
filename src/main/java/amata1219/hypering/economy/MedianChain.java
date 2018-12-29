@@ -10,8 +10,8 @@ public class MedianChain {
 
 	private boolean flag;
 
-	private long time;
-	private long latest;
+	private long time = 100000L;
+	private long latest = System.nanoTime();
 
 	private MedianChain(){
 
@@ -60,6 +60,9 @@ public class MedianChain {
 			latest = median;
 			return;
 		}
+
+		if(latest == getMedian(System.nanoTime()))
+			return;
 
 		if(latest > 0 && time > 0)
 			Database.putCommand("INSERT INTO " + Database.getDatabaseName() + "." + table + " VALUES (" + time + "," + latest + ")");
