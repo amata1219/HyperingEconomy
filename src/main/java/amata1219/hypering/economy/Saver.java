@@ -5,7 +5,7 @@ import java.util.UUID;
 public class Saver {
 
 	public static void saveLong(UUID uuid, String columnIndex, long value){
-		Database.putCommand("UPDATE HyperingEconomyDatabase.playerdata SET " + columnIndex + " = " + value + " WHERE uuid = '" + uuid.toString() + "'");
+		SQL.getSQL().putCommand("UPDATE HyperingEconomyDatabase.playerdata SET " + columnIndex + " = " + value + " WHERE uuid = '" + uuid.toString() + "'");
 	}
 
 }

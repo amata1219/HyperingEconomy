@@ -33,7 +33,7 @@ public class MedianChain {
 
 		chain.chain.put(0L, DEFAULT_VALUE);
 
-		try(Connection con = Database.getHikariDataSource().getConnection();
+		try(Connection con = SQL.getSQL().getSource().getConnection();
 				PreparedStatement statement = con.prepareStatement("SELECT * FROM HyperingEconomyDatabase." + chain.table)){
 			try(ResultSet result = statement.executeQuery()){
 				while(result.next())
@@ -90,7 +90,7 @@ public class MedianChain {
 		}
 
 		chain.put(time, latest);
-		Database.putCommand("INSERT INTO " + Database.getDatabaseName() + "." + table + " VALUES (" + time + "," + latest + ")");
+		SQL.getSQL().putCommand("INSERT INTO HyperingEconomyDatabase." + SQL.getSQL().name + " VALUES (" + time + "," + latest + ")");
 
 		time = System.nanoTime();
 		latest = median;

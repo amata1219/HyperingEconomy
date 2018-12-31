@@ -4,6 +4,8 @@ import java.util.UUID;
 
 public interface HyperingEconomyAPI {
 
+	HyperingEconomyAPI getHyperingEconomyAPI();
+
 	void updateMedian();
 
 	long getMedian();
@@ -33,6 +35,8 @@ public interface HyperingEconomyAPI {
 	void addMoney(UUID uuid, long increase);
 
 	void removeMoney(UUID uuid, long decrease);
+
+	void sendMoney(UUID from, UUID to, long money);
 
 	long getTickets(UUID uuid);
 

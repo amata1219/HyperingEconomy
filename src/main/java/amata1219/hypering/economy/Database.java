@@ -1,4 +1,4 @@
-package amata1219.hypering.economy;
+/*package amata1219.hypering.economy;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -69,8 +69,8 @@ public class Database implements HyperingEconomyAPI {
 		database.source = new HikariDataSource(config);
 
 		Database.database = database;
-		
-		
+
+
 	}
 
 	public static Database getDatabase(){
@@ -410,4 +410,4 @@ public class Database implements HyperingEconomyAPI {
 		return sum;
 	}
 
-}
+}*/

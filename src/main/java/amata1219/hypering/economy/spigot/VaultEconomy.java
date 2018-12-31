@@ -10,8 +10,8 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
-import amata1219.hypering.economy.Database;
 import amata1219.hypering.economy.HyperingEconomyAPI;
+import amata1219.hypering.economy.SQL;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
 import net.milkbowl.vault.economy.EconomyResponse.ResponseType;
@@ -19,6 +19,7 @@ import net.milkbowl.vault.economy.EconomyResponse.ResponseType;
 public class VaultEconomy implements Economy {
 
 	private static VaultEconomy instance;
+	private HyperingEconomyAPI api;
 
 	private BukkitTask collector;
 
@@ -30,6 +31,7 @@ public class VaultEconomy implements Economy {
 
 	public static void load(){
 		instance = new VaultEconomy();
+		instance.api = SQL.getSQL().getHyperingEconomyAPI();
 
 		instance.collector = new BukkitRunnable(){
 
@@ -133,18 +135,17 @@ public class VaultEconomy implements Economy {
 		if(player.getName() == null)
 			return new EconomyResponse(0, 0, ResponseType.FAILURE, "Player not exist");
 
-		HyperingEconomyAPI api = Database.getHyperingEconomyAPI();
-		if(!api.exist(player.getUniqueId()))
+		UUID uuid = player.getUniqueId();
+		if(!SQL.getSQL().playerdata.containsKey(uuid) && !player.hasPlayedBefore() && !api.exist(uuid))
 			return new EconomyResponse(0, 0, ResponseType.FAILURE, "Player not exist");
 
-		UUID uuid = player.getUniqueId();
 		long money = Double.valueOf(arg1).longValue();
 
-		api.getMoneyEditer(HyperingEconomy.getServerName(), uuid).add(money);
+		api.addMoney(uuid, money);
 
 		collect(uuid, money);
 
-		return new EconomyResponse(arg1, api.getMoney(HyperingEconomy.getServerName(), player.getUniqueId()), ResponseType.SUCCESS, "");
+		return new EconomyResponse(arg1, api.getMoney(uuid), ResponseType.SUCCESS, "");
 	}
 
 	@Override
@@ -155,18 +156,17 @@ public class VaultEconomy implements Economy {
 		if(player.getName() == null)
 			return new EconomyResponse(0, 0, ResponseType.FAILURE, "Player not exist");
 
-		HyperingEconomyAPI api = Database.getHyperingEconomyAPI();
-		if(!api.exist(player.getUniqueId()))
+		UUID uuid = player.getUniqueId();
+		if(!SQL.getSQL().playerdata.containsKey(uuid) && !player.hasPlayedBefore() && !api.exist(uuid))
 			return new EconomyResponse(0, 0, ResponseType.FAILURE, "Player not exist");
 
-		UUID uuid = player.getUniqueId();
 		long money = Double.valueOf(arg1).longValue();
 
-		api.getMoneyEditer(HyperingEconomy.getServerName(), uuid).add(money);
+		api.addMoney(uuid, money);
 
 		collect(uuid, money);
 
-		return new EconomyResponse(arg1, api.getMoney(HyperingEconomy.getServerName(), player.getUniqueId()), ResponseType.SUCCESS, "");
+		return new EconomyResponse(arg1, api.getMoney(uuid), ResponseType.SUCCESS, "");
 	}
 
 	@Override
@@ -196,11 +196,11 @@ public class VaultEconomy implements Economy {
 		if(player.getName() == null)
 			return -1;
 
-		HyperingEconomyAPI api = Database.getHyperingEconomyAPI();
-		if(!api.exist(player.getUniqueId()))
+		UUID uuid = player.getUniqueId();
+		if(!SQL.getSQL().playerdata.containsKey(uuid) && !player.hasPlayedBefore() && !api.exist(uuid))
 			return -1;
 
-		return api.getMoney(HyperingEconomy.getServerName(), player.getUniqueId());
+		return api.getMoney(uuid);
 	}
 
 	@Override
@@ -208,11 +208,11 @@ public class VaultEconomy implements Economy {
 		if(player.getName() == null)
 			return -1;
 
-		HyperingEconomyAPI api = Database.getHyperingEconomyAPI();
-		if(!api.exist(player.getUniqueId()))
+		UUID uuid = player.getUniqueId();
+		if(!SQL.getSQL().playerdata.containsKey(uuid) && !player.hasPlayedBefore() && !api.exist(uuid))
 			return -1;
 
-		return api.getMoney(HyperingEconomy.getServerName(), player.getUniqueId());
+		return api.getMoney(uuid);
 	}
 
 	@Override
@@ -242,11 +242,11 @@ public class VaultEconomy implements Economy {
 		if(player.getName() == null)
 			return false;
 
-		HyperingEconomyAPI api = Database.getHyperingEconomyAPI();
-		if(!api.exist(player.getUniqueId()))
+		UUID uuid = player.getUniqueId();
+		if(!SQL.getSQL().playerdata.containsKey(uuid) && !player.hasPlayedBefore() && !api.exist(uuid))
 			return false;
 
-		return api.hasMoney(HyperingEconomy.getServerName(), player.getUniqueId(), Double.valueOf(arg1).longValue());
+		return api.hasMoney(uuid, Double.valueOf(arg1).longValue());
 	}
 
 	@Override
@@ -254,11 +254,11 @@ public class VaultEconomy implements Economy {
 		if(player.getName() == null)
 			return false;
 
-		HyperingEconomyAPI api = Database.getHyperingEconomyAPI();
-		if(!api.exist(player.getUniqueId()))
+		UUID uuid = player.getUniqueId();
+		if(!SQL.getSQL().playerdata.containsKey(uuid) && !player.hasPlayedBefore() && !api.exist(uuid))
 			return false;
 
-		return api.hasMoney(HyperingEconomy.getServerName(), player.getUniqueId(), Double.valueOf(arg1).longValue());
+		return api.hasMoney(uuid, Double.valueOf(arg1).longValue());
 	}
 
 	@Override
@@ -331,13 +331,13 @@ public class VaultEconomy implements Economy {
 		if(player.getName() == null)
 			return new EconomyResponse(0, 0, ResponseType.FAILURE, "Player not exist");
 
-		HyperingEconomyAPI api = Database.getHyperingEconomyAPI();
-		if(!api.exist(player.getUniqueId()))
+		UUID uuid = player.getUniqueId();
+		if(!SQL.getSQL().playerdata.containsKey(uuid) && !player.hasPlayedBefore() && !api.exist(uuid))
 			return new EconomyResponse(0, 0, ResponseType.FAILURE, "Player not exist");
 
-		api.getMoneyEditer(HyperingEconomy.getServerName(), player.getUniqueId()).remove(Double.valueOf(arg1).longValue());
+		api.removeMoney(uuid, Double.valueOf(arg1).longValue());
 
-		return new EconomyResponse(arg1, api.getMoney(HyperingEconomy.getServerName(), player.getUniqueId()), ResponseType.SUCCESS, "");
+		return new EconomyResponse(arg1, api.getMoney(uuid), ResponseType.SUCCESS, "");
 	}
 
 	@Override
@@ -348,13 +348,13 @@ public class VaultEconomy implements Economy {
 		if(player.getName() == null)
 			return new EconomyResponse(0, 0, ResponseType.FAILURE, "Player not exist");
 
-		HyperingEconomyAPI api = Database.getHyperingEconomyAPI();
-		if(!api.exist(player.getUniqueId()))
+		UUID uuid = player.getUniqueId();
+		if(!SQL.getSQL().playerdata.containsKey(uuid) && !player.hasPlayedBefore() && !api.exist(uuid))
 			return new EconomyResponse(0, 0, ResponseType.FAILURE, "Player not exist");
 
-		api.getMoneyEditer(HyperingEconomy.getServerName(), player.getUniqueId()).remove(Double.valueOf(arg1).longValue());
+		api.removeMoney(uuid, Double.valueOf(arg1).longValue());
 
-		return new EconomyResponse(arg1, api.getMoney(HyperingEconomy.getServerName(), player.getUniqueId()), ResponseType.SUCCESS, "");
+		return new EconomyResponse(arg1, api.getMoney(uuid), ResponseType.SUCCESS, "");
 	}
 
 	@Override
