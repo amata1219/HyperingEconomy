@@ -1,8 +1,15 @@
 package amata1219.hypering.economy;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
+
 public class MedianChain {
 
-	public static final long STONE = 100000L;
+	public static final long DEFAULT_VALUE = 100000L;
 
 	private String table;
 
@@ -10,8 +17,10 @@ public class MedianChain {
 
 	private boolean flag;
 
-	private long time = 100000L;
-	private long latest = System.nanoTime();
+	private long time;
+	private long latest;
+
+	private Map<Long, Long> chain = new HashMap<>();
 
 	private MedianChain(){
 
@@ -22,16 +31,35 @@ public class MedianChain {
 
 		chain.table = serverName.name().toLowerCase() + "_medianchain";
 
-		if(Getter.getLong("SELECT COUNT(time) AS count FROM HyperingEconomyDatabase." + chain.table, "count") == 0)
-			Database.putCommand("INSERT INTO " + Database.getDatabaseName() + "." + chain.table + " VALUES (" + System.nanoTime() + "," + STONE + ")");
+		chain.chain.put(0L, DEFAULT_VALUE);
 
+		try(Connection con = Database.getHikariDataSource().getConnection();
+				PreparedStatement statement = con.prepareStatement("SELECT * FROM HyperingEconomyDatabase." + chain.table)){
+			try(ResultSet result = statement.executeQuery()){
+				while(result.next())
+					chain.chain.put(result.getLong("time"), result.getLong("median"));
+
+				result.close();
+				statement.close();
+			}
+		}catch(SQLException e){
+			e.printStackTrace();
+		}
+
+		chain.time = System.nanoTime();
 		chain.latest = chain.getMedian(System.nanoTime());
 
 		return chain;
 	}
 
 	public long getMedian(long time){
-		return Getter.getLong("SELECT median FROM HyperingEconomyDatabase." + table + " WHERE time <= " + time + " ORDER BY time DESC", "median");
+		long t = 0L;
+		for(long k : chain.keySet()){
+			if(k <= time || k > t)
+				t = k;
+		}
+
+		return chain.containsKey(t) ? chain.get(t) : DEFAULT_VALUE;
 	}
 
 	public long getTicketPrice(long time){
@@ -55,17 +83,14 @@ public class MedianChain {
 		if(latest == median)
 			return;
 
-		if(!flag){
+		if(!flag || latest == getMedian(System.nanoTime())){
 			time = System.nanoTime();
 			latest = median;
 			return;
 		}
 
-		if(latest == getMedian(System.nanoTime()))
-			return;
-
-		if(latest > 0 && time > 0)
-			Database.putCommand("INSERT INTO " + Database.getDatabaseName() + "." + table + " VALUES (" + time + "," + latest + ")");
+		chain.put(time, latest);
+		Database.putCommand("INSERT INTO " + Database.getDatabaseName() + "." + table + " VALUES (" + time + "," + latest + ")");
 
 		time = System.nanoTime();
 		latest = median;

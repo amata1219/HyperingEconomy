@@ -1,10 +1,15 @@
 package amata1219.hypering.economy.spigot;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.server.PluginEnableEvent;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -12,13 +17,15 @@ import amata1219.hypering.economy.Database;
 import amata1219.hypering.economy.ServerName;
 import net.milkbowl.vault.economy.Economy;
 
-public class Electron extends JavaPlugin {
+public class Electron extends JavaPlugin implements Listener {
 
 	private static Electron plugin;
 
 	private static ServerName serverName;
 
 	private static boolean loadedVaultEconomy;
+
+	private final Map<String, CommandExecutor> commands = new HashMap<>();
 
 	@Override
 	public void onEnable(){
@@ -33,38 +40,16 @@ public class Electron extends JavaPlugin {
 		if(serverName == ServerName.MAIN)
 			Database.registerEconomyServer(serverName);
 
-		new Listener(){
-			private Electron electron;
+		commands.put("he", new CommandExecutor(){
 
-			public void setElectron(Electron electron){
-				this.electron = electron;
-
-				Plugin plugin = electron.getServer().getPluginManager().getPlugin("Vault");
-				if(plugin == null)
-					return;
-
-				if(!plugin.isEnabled())
-					electron.getServer().getPluginManager().registerEvents(this, electron);
-				else
-					loadVaultEconomy();
+			@Override
+			public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+				return true;
 			}
 
-			private void loadVaultEconomy(){
-				VaultEconomy.load();
+		});
 
-				electron.getServer().getServicesManager().register(Economy.class, VaultEconomy.getInstance(), electron, ServicePriority.Normal);
-			}
-
-			@EventHandler
-			public void onEnable(PluginEnableEvent e){
-				if(!e.getPlugin().getName().equals("Vault"))
-					return;
-
-				loadVaultEconomy();
-
-				PluginEnableEvent.getHandlerList().unregister(electron);
-			}
-		}.setElectron(this);
+		getServer().getPluginManager().registerEvents(this, this);
 	}
 
 	@Override
@@ -73,7 +58,7 @@ public class Electron extends JavaPlugin {
 
 		getServer().getServicesManager().unregisterAll(this);
 
-		HandlerList.unregisterAll(this);
+		HandlerList.unregisterAll((JavaPlugin) this);
 	}
 
 	public static Electron getPlugin(){
@@ -90,6 +75,24 @@ public class Electron extends JavaPlugin {
 
 	public static boolean isLoadedVaultEconomy(){
 		return loadedVaultEconomy;
+	}
+
+	private void loadVaultEconomy(){
+		VaultEconomy.load();
+
+		getServer().getServicesManager().register(Economy.class, VaultEconomy.getInstance(), this, ServicePriority.Normal);
+
+		loadedVaultEconomy = true;
+	}
+
+	@EventHandler
+	public void onEnable(PluginEnableEvent e){
+		if(!e.getPlugin().getName().equals("Vault"))
+			return;
+
+		loadVaultEconomy();
+
+		PluginEnableEvent.getHandlerList().unregister((JavaPlugin) this);
 	}
 
 }

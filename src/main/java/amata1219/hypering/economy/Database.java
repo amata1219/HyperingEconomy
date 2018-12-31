@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -67,6 +68,11 @@ public class Database implements HyperingEconomyAPI {
 
 		config.addDataSourceProperty("user", userName);
 		config.addDataSourceProperty("password", password);
+
+		config.setMaximumPoolSize(30);
+		config.setMinimumIdle(30);
+		config.setMaxLifetime(1800000);
+		config.setConnectionTimeout(5000);
 
 		config.setConnectionInitSql("SELECT 1");
 
@@ -137,6 +143,9 @@ public class Database implements HyperingEconomyAPI {
 		}
 	}
 
+	private final List<Long> list = new ArrayList<>();
+	private final Map<String, Long> map = new HashMap<>();
+
 	@Override
 	public void updateMedian(ServerName serverName) {
 		if(!chain.containsKey(serverName))
@@ -144,14 +153,13 @@ public class Database implements HyperingEconomyAPI {
 
 		String columnIndex = serverName.name().toLowerCase();
 
-		List<Long> list = new ArrayList<>();
-
 		try(Connection con = Database.getHikariDataSource().getConnection();
-				PreparedStatement statement = con.prepareStatement("SELECT " + columnIndex + ", uuid FROM HyperingEconomyDatabase.playerdata WHERE last >= " + (System.currentTimeMillis() - 2592000000L) + " AND " + columnIndex + " >= 500")){
+				PreparedStatement statement = con.prepareStatement("SELECT * FROM HyperingEconomyDatabase.playerdata")){
 			try(ResultSet result = statement.executeQuery()){
-				while(result.next())
-					list.add(result.getLong(columnIndex) + getTicketsValue(serverName, result.getString("uuid")));
-
+				while(result.next()){
+					if(System.currentTimeMillis() - result.getLong("last") < 2592000000L)
+						map.put(result.getString("uuid"), result.getLong(columnIndex));
+				}
 				result.close();
 				statement.close();
 			}
@@ -159,12 +167,35 @@ public class Database implements HyperingEconomyAPI {
 			e.printStackTrace();
 		}
 
+		try(Connection con = Database.getHikariDataSource().getConnection();
+				PreparedStatement statement = con.prepareStatement("SELECT * FROM HyperingEconomyDatabase.ticketdata")){
+			try(ResultSet result = statement.executeQuery()){
+				while(result.next()){
+					String uuid = result.getString("uuid");
+					if(!map.containsKey(uuid))
+						return;
+
+					map.put(uuid, map.get(uuid) + chain.get(serverName).getTicketPrice(result.getLong("time")) * result.getInt("number"));
+				}
+				result.close();
+				statement.close();
+			}
+
+		}catch(SQLException e){
+			e.printStackTrace();
+		}
+
+		for(long assets : map.values()){
+			if(assets >= 500)
+				list.add(assets);
+		}
+
 		int size = list.size();
 
 		MedianChain mc = chain.get(serverName);
 
 		if(size < 10){
-			median.put(serverName, MedianChain.STONE);
+			median.put(serverName, MedianChain.DEFAULT_VALUE);
 			mc.setFix(true);
 		}else{
 			list.sort(Comparator.reverseOrder());
@@ -172,7 +203,7 @@ public class Database implements HyperingEconomyAPI {
 			long m = list.get(size / 2);
 
 			if(m < 5000){
-				median.put(serverName, MedianChain.STONE);
+				median.put(serverName, MedianChain.DEFAULT_VALUE);
 				mc.setFix(true);
 			}else{
 				median.put(serverName, m);
@@ -182,6 +213,9 @@ public class Database implements HyperingEconomyAPI {
 		}
 
 		chain.get(serverName).update(median.get(serverName));
+
+		list.clear();
+		map.clear();
 	}
 
 	@Override
