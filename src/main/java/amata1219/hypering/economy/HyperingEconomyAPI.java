@@ -4,13 +4,13 @@ import java.util.UUID;
 
 public interface HyperingEconomyAPI {
 
-	void updateMedian(ServerName serverName);
+	void updateMedian();
 
-	long getMedian(ServerName serverName);
+	long getMedian();
 
-	MedianChain getMedianChain(ServerName serverName);
+	MedianChain getMedianChain();
 
-	long getTicketPrice(ServerName serverName);
+	long getTicketPrice();
 
 	boolean exist(UUID uuid);
 
@@ -24,17 +24,15 @@ public interface HyperingEconomyAPI {
 
 	long getLastPlayed(UUID uuid);
 
-	long getMoney(ServerName serverName, UUID uuid);
+	long getMoney(UUID uuid);
 
-	boolean hasMoney(ServerName serverName, UUID uuid, long threshold);
+	boolean hasMoney(UUID uuid, long threshold);
 
-	void setMoney(ServerName serverName, UUID uuid, long money);
+	void setMoney(UUID uuid, long money);
 
-	void addMoney(ServerName serverName, UUID uuid, long increase);
+	void addMoney(UUID uuid, long increase);
 
-	void removeMoney(ServerName serverName, UUID uuid, long decrease);
-
-	MoneyEditer getMoneyEditer(ServerName serverName, UUID uuid);
+	void removeMoney(UUID uuid, long decrease);
 
 	long getTickets(UUID uuid);
 
@@ -42,15 +40,15 @@ public interface HyperingEconomyAPI {
 
 	void addTickets(UUID uuid, long increase);
 
-	void removeTickets(ServerName serverName, UUID uuid, long decrease);
+	void removeTickets(UUID uuid, long decrease);
 
-	boolean canBuyTickets(ServerName serverName, UUID uuid, long number);
+	boolean canBuyTickets(UUID uuid, long number);
 
-	void buyTickets(ServerName serverName, UUID uuid, long number);
+	void buyTickets(UUID uuid, long number);
 
 	boolean canCashTickets(UUID uuid, long number);
 
-	void cashTickets(ServerName serverName, UUID uuid, long number);
+	void cashTickets(UUID uuid, long number);
 
-	long getTicketsValue(ServerName serverName, UUID uuid);
+	long getTicketsValue(UUID uuid);
 }

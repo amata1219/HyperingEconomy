@@ -40,7 +40,7 @@ public class VaultEconomy implements Economy {
 				map.clear();
 			}
 
-		}.runTaskTimer(Electron.getPlugin(), 36000, 36000L);
+		}.runTaskTimer(HyperingEconomy.getPlugin(), 36000, 36000L);
 	}
 
 	public static void unload(){
@@ -140,11 +140,11 @@ public class VaultEconomy implements Economy {
 		UUID uuid = player.getUniqueId();
 		long money = Double.valueOf(arg1).longValue();
 
-		api.getMoneyEditer(Electron.getServerName(), uuid).add(money);
+		api.getMoneyEditer(HyperingEconomy.getServerName(), uuid).add(money);
 
 		collect(uuid, money);
 
-		return new EconomyResponse(arg1, api.getMoney(Electron.getServerName(), player.getUniqueId()), ResponseType.SUCCESS, "");
+		return new EconomyResponse(arg1, api.getMoney(HyperingEconomy.getServerName(), player.getUniqueId()), ResponseType.SUCCESS, "");
 	}
 
 	@Override
@@ -162,11 +162,11 @@ public class VaultEconomy implements Economy {
 		UUID uuid = player.getUniqueId();
 		long money = Double.valueOf(arg1).longValue();
 
-		api.getMoneyEditer(Electron.getServerName(), uuid).add(money);
+		api.getMoneyEditer(HyperingEconomy.getServerName(), uuid).add(money);
 
 		collect(uuid, money);
 
-		return new EconomyResponse(arg1, api.getMoney(Electron.getServerName(), player.getUniqueId()), ResponseType.SUCCESS, "");
+		return new EconomyResponse(arg1, api.getMoney(HyperingEconomy.getServerName(), player.getUniqueId()), ResponseType.SUCCESS, "");
 	}
 
 	@Override
@@ -200,7 +200,7 @@ public class VaultEconomy implements Economy {
 		if(!api.exist(player.getUniqueId()))
 			return -1;
 
-		return api.getMoney(Electron.getServerName(), player.getUniqueId());
+		return api.getMoney(HyperingEconomy.getServerName(), player.getUniqueId());
 	}
 
 	@Override
@@ -212,7 +212,7 @@ public class VaultEconomy implements Economy {
 		if(!api.exist(player.getUniqueId()))
 			return -1;
 
-		return api.getMoney(Electron.getServerName(), player.getUniqueId());
+		return api.getMoney(HyperingEconomy.getServerName(), player.getUniqueId());
 	}
 
 	@Override
@@ -246,7 +246,7 @@ public class VaultEconomy implements Economy {
 		if(!api.exist(player.getUniqueId()))
 			return false;
 
-		return api.hasMoney(Electron.getServerName(), player.getUniqueId(), Double.valueOf(arg1).longValue());
+		return api.hasMoney(HyperingEconomy.getServerName(), player.getUniqueId(), Double.valueOf(arg1).longValue());
 	}
 
 	@Override
@@ -258,7 +258,7 @@ public class VaultEconomy implements Economy {
 		if(!api.exist(player.getUniqueId()))
 			return false;
 
-		return api.hasMoney(Electron.getServerName(), player.getUniqueId(), Double.valueOf(arg1).longValue());
+		return api.hasMoney(HyperingEconomy.getServerName(), player.getUniqueId(), Double.valueOf(arg1).longValue());
 	}
 
 	@Override
@@ -318,7 +318,7 @@ public class VaultEconomy implements Economy {
 
 	@Override
 	public boolean isEnabled() {
-		return Electron.isEconomyEnable();
+		return HyperingEconomy.isEconomyEnable();
 	}
 
 	@SuppressWarnings("deprecation")
@@ -335,9 +335,9 @@ public class VaultEconomy implements Economy {
 		if(!api.exist(player.getUniqueId()))
 			return new EconomyResponse(0, 0, ResponseType.FAILURE, "Player not exist");
 
-		api.getMoneyEditer(Electron.getServerName(), player.getUniqueId()).remove(Double.valueOf(arg1).longValue());
+		api.getMoneyEditer(HyperingEconomy.getServerName(), player.getUniqueId()).remove(Double.valueOf(arg1).longValue());
 
-		return new EconomyResponse(arg1, api.getMoney(Electron.getServerName(), player.getUniqueId()), ResponseType.SUCCESS, "");
+		return new EconomyResponse(arg1, api.getMoney(HyperingEconomy.getServerName(), player.getUniqueId()), ResponseType.SUCCESS, "");
 	}
 
 	@Override
@@ -352,9 +352,9 @@ public class VaultEconomy implements Economy {
 		if(!api.exist(player.getUniqueId()))
 			return new EconomyResponse(0, 0, ResponseType.FAILURE, "Player not exist");
 
-		api.getMoneyEditer(Electron.getServerName(), player.getUniqueId()).remove(Double.valueOf(arg1).longValue());
+		api.getMoneyEditer(HyperingEconomy.getServerName(), player.getUniqueId()).remove(Double.valueOf(arg1).longValue());
 
-		return new EconomyResponse(arg1, api.getMoney(Electron.getServerName(), player.getUniqueId()), ResponseType.SUCCESS, "");
+		return new EconomyResponse(arg1, api.getMoney(HyperingEconomy.getServerName(), player.getUniqueId()), ResponseType.SUCCESS, "");
 	}
 
 	@Override

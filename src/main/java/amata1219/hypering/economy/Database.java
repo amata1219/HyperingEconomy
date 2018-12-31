@@ -34,22 +34,12 @@ public class Database implements HyperingEconomyAPI {
 	private String ticketDataTableName;
 	private String mainMedianChainTableName;
 
-	private HashMap<ServerName, MedianChain> chain = new HashMap<>();
-	private HashMap<ServerName, Long> median = new HashMap<>();
+	private MedianChain chain;
+	private long median;
+	private final HashMap<UUID, Player> players = new HashMap<>();
 
 	private Database(){
 
-	}
-
-	public static void main(String[] args){
-		new Measurer(){
-
-			@Override
-			public void execute() {
-
-			}
-
-		}.println();
 	}
 
 	public static void load(String host, int port, String databaseName, String userName, String password){
@@ -79,6 +69,8 @@ public class Database implements HyperingEconomyAPI {
 		database.source = new HikariDataSource(config);
 
 		Database.database = database;
+		
+		
 	}
 
 	public static Database getDatabase(){
@@ -90,8 +82,8 @@ public class Database implements HyperingEconomyAPI {
 	}
 
 	public static void registerEconomyServer(ServerName serverName){
-		database.chain.put(serverName, MedianChain.load(serverName));
-		database.median.put(serverName, 5000L);
+		database.chain.put(serverName, MedianChain.load(serverName);
+		database.median.put(serverName, MedianChain.DEFAULT_VALUE;
 
 		database.updateMedian(serverName);
 

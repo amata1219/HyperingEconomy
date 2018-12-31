@@ -17,13 +17,11 @@ import amata1219.hypering.economy.Database;
 import amata1219.hypering.economy.ServerName;
 import net.milkbowl.vault.economy.Economy;
 
-public class Electron extends JavaPlugin implements Listener {
+public class HyperingEconomy extends JavaPlugin implements Listener {
 
-	private static Electron plugin;
+	private static HyperingEconomy plugin;
 
 	private static ServerName serverName;
-
-	private static boolean loadedVaultEconomy;
 
 	private final Map<String, CommandExecutor> commands = new HashMap<>();
 
@@ -61,7 +59,7 @@ public class Electron extends JavaPlugin implements Listener {
 		HandlerList.unregisterAll((JavaPlugin) this);
 	}
 
-	public static Electron getPlugin(){
+	public static HyperingEconomy getPlugin(){
 		return plugin;
 	}
 
@@ -73,16 +71,10 @@ public class Electron extends JavaPlugin implements Listener {
 		return plugin.getConfig().getBoolean("EnableEconomy");
 	}
 
-	public static boolean isLoadedVaultEconomy(){
-		return loadedVaultEconomy;
-	}
-
 	private void loadVaultEconomy(){
 		VaultEconomy.load();
 
 		getServer().getServicesManager().register(Economy.class, VaultEconomy.getInstance(), this, ServicePriority.Normal);
-
-		loadedVaultEconomy = true;
 	}
 
 	@EventHandler
