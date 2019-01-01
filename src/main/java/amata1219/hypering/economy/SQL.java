@@ -47,7 +47,7 @@ public class SQL implements HyperingEconomyAPI {
 	}
 
 	public static void enable(){
-		SQL sql = new SQL();
+		sql = new SQL();
 
 		ServerName serverName = HyperingEconomy.getServerName();
 
@@ -72,8 +72,6 @@ public class SQL implements HyperingEconomyAPI {
 		}catch(SQLException e){
 			e.printStackTrace();
 		}
-
-		SQL.sql = sql;
 	}
 
 	private void load(){
@@ -117,6 +115,8 @@ public class SQL implements HyperingEconomyAPI {
 						continue;
 
 					Saver.saveLong(entry.getKey(), name, money.get());
+
+					money.clear();
 				}
 			}
 		}.runTaskTimerAsynchronously(HyperingEconomy.getPlugin(), 19000L, 19000L);

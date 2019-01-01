@@ -1,5 +1,6 @@
 name: HyperingEconomy
 main: amata1219.hypering.economy.spigot.HyperingEconomy
 version: 1.0.0
+api-version: 1.13
 depend: [Vault]
 author: amata1219(Twitter@amata1219)

@@ -49,6 +49,19 @@ public class HyperingEconomy extends JavaPlugin implements Listener {
 		});
 
 		getServer().getPluginManager().registerEvents(this, this);
+
+		getServer().getOnlinePlayers().forEach(player -> {
+			UUID uuid = player.getUniqueId();
+
+			SQL sql = SQL.getSQL();
+			if(sql.playerdata.containsKey(uuid))
+				return;
+
+			if(!sql.exist(uuid))
+				sql.create(uuid);
+			else
+				sql.playerdata.put(uuid, Money.load(uuid));
+		});
 	}
 
 	@Override
