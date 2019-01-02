@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -19,6 +20,7 @@ import org.bukkit.scheduler.BukkitTask;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
+import amata1219.hypering.economy.spigot.CollectedEvent;
 import amata1219.hypering.economy.spigot.HyperingEconomy;
 
 public class SQL implements HyperingEconomyAPI {
@@ -43,7 +45,11 @@ public class SQL implements HyperingEconomyAPI {
 
 	private List<Future> futures = new ArrayList<>();
 
+	public final static HashMap<UUID, Long> map = new HashMap<>();
+	private BukkitTask collector;
+
 	private SQL(){
+
 	}
 
 	public static void enable(){
@@ -72,6 +78,17 @@ public class SQL implements HyperingEconomyAPI {
 		}catch(SQLException e){
 			e.printStackTrace();
 		}
+
+		sql.collector = new BukkitRunnable(){
+
+			@Override
+			public void run(){
+				CollectedEvent event = new CollectedEvent(SQL.map);
+				Bukkit.getPluginManager().callEvent(event);
+				map.clear();
+			}
+
+		}.runTaskTimer(HyperingEconomy.getPlugin(), 36000, 36000L);
 	}
 
 	private void load(){
@@ -141,6 +158,9 @@ public class SQL implements HyperingEconomyAPI {
 
 		if(fixer != null && !fixer.isCancelled())
 			fixer.cancel();
+
+		if(collector != null && !collector.isCancelled())
+			collector.cancel();
 	}
 
 	public void wish(Future future){
@@ -159,22 +179,36 @@ public class SQL implements HyperingEconomyAPI {
 		return System.currentTimeMillis();
 	}
 
+	public static void collect(UUID uuid, long increase){
+		if(map.containsKey(uuid))
+			map.put(uuid, map.get(uuid) + increase);
+		else
+			map.put(uuid, increase);
+	}
+
 	public void putCommand(String command){
-		try(Connection con = source.getConnection();
-				PreparedStatement statement = con.prepareStatement(command)){
-			statement.executeUpdate();
-			statement.close();
-		}catch(SQLException e){
-			e.printStackTrace();
-			wish(new Future(){
+		new BukkitRunnable(){
 
-				@Override
-				public void done() {
-					putCommand(command);
+			@Override
+			public void run() {
+				try(Connection con = source.getConnection();
+						PreparedStatement statement = con.prepareStatement(command)){
+					statement.executeUpdate();
+					statement.close();
+				}catch(SQLException e){
+					e.printStackTrace();
+					wish(new Future(){
+
+						@Override
+						public void done() {
+							putCommand(command);
+						}
+
+					});
 				}
+			}
 
-			});
-		}
+		}.runTaskAsynchronously(HyperingEconomy.getPlugin());
 	}
 
 	@Override

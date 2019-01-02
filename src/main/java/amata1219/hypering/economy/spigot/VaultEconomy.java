@@ -1,15 +1,11 @@
 package amata1219.hypering.economy.spigot;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
-
 import amata1219.hypering.economy.HyperingEconomyAPI;
 import amata1219.hypering.economy.SQL;
 import net.milkbowl.vault.economy.Economy;
@@ -21,10 +17,6 @@ public class VaultEconomy implements Economy {
 	private static VaultEconomy instance;
 	private HyperingEconomyAPI api;
 
-	private BukkitTask collector;
-
-	public final static HashMap<UUID, Long> map = new HashMap<>();
-
 	private VaultEconomy(){
 
 	}
@@ -32,32 +24,13 @@ public class VaultEconomy implements Economy {
 	public static void load(){
 		instance = new VaultEconomy();
 		instance.api = SQL.getSQL().getHyperingEconomyAPI();
-
-		instance.collector = new BukkitRunnable(){
-
-			@Override
-			public void run(){
-				CollectedEvent event = new CollectedEvent(VaultEconomy.map);
-				Bukkit.getPluginManager().callEvent(event);
-				map.clear();
-			}
-
-		}.runTaskTimer(HyperingEconomy.getPlugin(), 36000, 36000L);
 	}
 
 	public static void unload(){
-		instance.collector.cancel();
 	}
 
 	public static VaultEconomy getInstance(){
 		return instance;
-	}
-
-	private void collect(UUID uuid, long increase){
-		if(map.containsKey(uuid))
-			map.put(uuid, map.get(uuid) + increase);
-		else
-			map.put(uuid, increase);
 	}
 
 	@Override
@@ -139,11 +112,7 @@ public class VaultEconomy implements Economy {
 		if(!SQL.getSQL().playerdata.containsKey(uuid) && !player.hasPlayedBefore() && !api.exist(uuid))
 			return new EconomyResponse(0, 0, ResponseType.FAILURE, "Player not exist");
 
-		long money = Double.valueOf(arg1).longValue();
-
-		api.addMoney(uuid, money);
-
-		collect(uuid, money);
+		api.addMoney(uuid, Double.valueOf(arg1).longValue());
 
 		return new EconomyResponse(arg1, api.getMoney(uuid), ResponseType.SUCCESS, "");
 	}
@@ -160,11 +129,7 @@ public class VaultEconomy implements Economy {
 		if(!SQL.getSQL().playerdata.containsKey(uuid) && !player.hasPlayedBefore() && !api.exist(uuid))
 			return new EconomyResponse(0, 0, ResponseType.FAILURE, "Player not exist");
 
-		long money = Double.valueOf(arg1).longValue();
-
-		api.addMoney(uuid, money);
-
-		collect(uuid, money);
+		api.addMoney(uuid, Double.valueOf(arg1).longValue());
 
 		return new EconomyResponse(arg1, api.getMoney(uuid), ResponseType.SUCCESS, "");
 	}
