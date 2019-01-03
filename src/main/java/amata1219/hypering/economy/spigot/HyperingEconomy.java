@@ -3,6 +3,7 @@ package amata1219.hypering.economy.spigot;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.Map.Entry;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -10,14 +11,13 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.server.PluginEnableEvent;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import amata1219.hypering.economy.Money;
 import amata1219.hypering.economy.SQL;
+import amata1219.hypering.economy.Saver;
 import amata1219.hypering.economy.ServerName;
 import net.milkbowl.vault.economy.Economy;
 
@@ -68,6 +68,16 @@ public class HyperingEconomy extends JavaPlugin implements Listener {
 	public void onDisable(){
 		SQL sql = SQL.getSQL();
 
+		for(Entry<UUID, Money> entry : sql.playerdata.entrySet()){
+			Money money = entry.getValue();
+			if(!money.isChanged())
+				continue;
+
+			Saver.saveLong(entry.getKey(), sql.name, money.get());
+
+			money.clear();
+		}
+
 		sql.cancel();
 		sql.close();
 
@@ -104,7 +114,7 @@ public class HyperingEconomy extends JavaPlugin implements Listener {
 		PluginEnableEvent.getHandlerList().unregister((JavaPlugin) this);
 	}
 
-	@EventHandler
+	/*@EventHandler
 	public void onJoin(PlayerJoinEvent e){
 		UUID uuid = e.getPlayer().getUniqueId();
 
@@ -121,6 +131,6 @@ public class HyperingEconomy extends JavaPlugin implements Listener {
 	@EventHandler
 	public void onQuit(PlayerQuitEvent e){
 		SQL.getSQL().updateLastPlayed(e.getPlayer().getUniqueId());
-	}
+	}*/
 
 }
