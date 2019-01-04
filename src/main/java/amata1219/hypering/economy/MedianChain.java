@@ -40,8 +40,8 @@ public class MedianChain {
 					chain.chain.put(result.getLong("time"), result.getLong("median"));
 
 				result.close();
-				statement.close();
 			}
+			statement.close();
 		}catch(SQLException e){
 			e.printStackTrace();
 		}

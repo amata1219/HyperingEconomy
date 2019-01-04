@@ -2,7 +2,7 @@ package amata1219.hypering.economy;
 
 import java.util.UUID;
 
-public class Money {
+public class Money implements Cloneable {
 
 	private long money = 0L;
 
@@ -60,6 +60,19 @@ public class Money {
 		money -= money < decrease ? money : decrease;
 
 		flag();
+	}
+
+	@Override
+	public Money clone(){
+		Money money = null;
+
+		try{
+			money = (Money) super.clone();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+
+		return money;
 	}
 
 }

@@ -1,7 +1,13 @@
 package amata1219.hypering.economy.spigot;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 import java.util.UUID;
 import java.util.Map.Entry;
 
@@ -11,6 +17,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.server.PluginEnableEvent;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -21,13 +28,11 @@ import amata1219.hypering.economy.Saver;
 import amata1219.hypering.economy.ServerName;
 import net.milkbowl.vault.economy.Economy;
 
-public class HyperingEconomy extends JavaPlugin implements Listener {
+public class HyperingEconomy extends JavaPlugin implements Listener, CommandExecutor {
 
 	private static HyperingEconomy plugin;
 
 	private static ServerName serverName;
-
-	private final Map<String, CommandExecutor> commands = new HashMap<>();
 
 	@Override
 	public void onEnable(){
@@ -39,14 +44,7 @@ public class HyperingEconomy extends JavaPlugin implements Listener {
 
 		SQL.enable();
 
-		commands.put("he", new CommandExecutor(){
-
-			@Override
-			public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-				return true;
-			}
-
-		});
+		getCommand("he").setExecutor(this);
 
 		getServer().getPluginManager().registerEvents(this, this);
 
@@ -86,6 +84,53 @@ public class HyperingEconomy extends JavaPlugin implements Listener {
 		HandlerList.unregisterAll((JavaPlugin) this);
 	}
 
+	@Override
+	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+		if(args.length == 0){
+
+		}else if(args[0].equalsIgnoreCase("median")){
+			sender.sendMessage("中央値: " + String.valueOf(SQL.getSQL().getMedian()));
+		}else if(args[0].equalsIgnoreCase("demo")){
+			HashMap<UUID, Money> map = new HashMap<>();
+			SQL.getSQL().playerdata.forEach((k, v) -> map.put(k, v.clone()));
+			try(Connection con = SQL.getSQL().getSource().getConnection();
+					PreparedStatement statement = con.prepareStatement("SELECT * FROM HyperingEconomyDatabase.ticketdata")){
+				try(ResultSet result = statement.executeQuery()){
+					while(result.next()){
+						UUID uuid = UUID.fromString(result.getString("uuid"));
+						if(!map.containsKey(uuid))
+							continue;
+
+						Money money = map.get(uuid);
+						money.add(SQL.getSQL().getMedianChain().getTicketPrice(result.getLong("time")) * result.getInt("number"));
+					}
+					result.close();
+				}
+				statement.close();
+			}catch(SQLException e){
+				e.printStackTrace();
+			}
+
+			List<Money> list = new ArrayList<>();
+			map.values().forEach(v -> {
+				if(v.get() >= 500)
+					list.add(v);
+			});
+			list.sort(new Comparator<Money>(){
+
+				@Override
+				public int compare(Money o1, Money o2) {
+					return -Long.compare(o1.get(), o2.get());
+				}
+
+			});
+			int size = list.size();
+			sender.sendMessage("有効プレイヤー数: " + size);
+			sender.sendMessage("計算結果: " + String.valueOf(list.get(size / 2).get()));
+		}
+		return true;
+	}
+
 	public static HyperingEconomy getPlugin(){
 		return plugin;
 	}
@@ -101,7 +146,7 @@ public class HyperingEconomy extends JavaPlugin implements Listener {
 	private void loadVaultEconomy(){
 		VaultEconomy.load();
 
-		getServer().getServicesManager().register(Economy.class, VaultEconomy.getInstance(), this, ServicePriority.Normal);
+		getServer().getServicesManager().register(Economy.class, VaultEconomy.getInstance(), this, ServicePriority.Highest);
 	}
 
 	@EventHandler
@@ -114,7 +159,7 @@ public class HyperingEconomy extends JavaPlugin implements Listener {
 		PluginEnableEvent.getHandlerList().unregister((JavaPlugin) this);
 	}
 
-	/*@EventHandler
+	@EventHandler
 	public void onJoin(PlayerJoinEvent e){
 		UUID uuid = e.getPlayer().getUniqueId();
 
@@ -127,10 +172,5 @@ public class HyperingEconomy extends JavaPlugin implements Listener {
 		else
 			sql.playerdata.put(uuid, Money.load(uuid));
 	}
-
-	@EventHandler
-	public void onQuit(PlayerQuitEvent e){
-		SQL.getSQL().updateLastPlayed(e.getPlayer().getUniqueId());
-	}*/
 
 }

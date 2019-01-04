@@ -2,5 +2,12 @@ name: HyperingEconomy
 main: amata1219.hypering.economy.spigot.HyperingEconomy
 version: 1.0.0
 api-version: 1.13
-depend: [Vault]
+depend: [Vault, Essentials]
 author: amata1219(Twitter@amata1219)
+
+commands:
+  he:
+    description: main command.
+    usage: /<command>
+    permission: hypering.economy.he
+    permission-message: You do not have permission.

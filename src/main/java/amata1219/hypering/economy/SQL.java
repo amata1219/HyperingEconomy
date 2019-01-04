@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
@@ -64,13 +65,15 @@ public class SQL implements HyperingEconomyAPI {
 		sql.chain = MedianChain.load(serverName);
 
 		String columnIndex = serverName.name().toLowerCase();
-
+		AtomicInteger count = new AtomicInteger();
 		try(Connection con = sql.source.getConnection();
 				PreparedStatement statement = con.prepareStatement("SELECT * FROM HyperingEconomyDatabase.playerdata")){
 			try(ResultSet result = statement.executeQuery()){
 				while(result.next()){
-					if(System.currentTimeMillis() - result.getLong("last") < 2592000000L)
+					if(System.currentTimeMillis() - result.getLong("last") < 2592000000L){
 						sql.playerdata.put(UUID.fromString(result.getString("uuid")), new Money(result.getLong(columnIndex)));
+						count.incrementAndGet();
+					}
 				}
 				result.close();
 			}
@@ -78,6 +81,8 @@ public class SQL implements HyperingEconomyAPI {
 		}catch(SQLException e){
 			e.printStackTrace();
 		}
+
+		System.out.println(count.get() + " player data loaded.");
 
 		sql.collector = new BukkitRunnable(){
 
@@ -227,7 +232,8 @@ public class SQL implements HyperingEconomyAPI {
 
 	@Override
 	public void updateMedian() {
-		HashMap<UUID, Money> map = new HashMap<>(playerdata);
+		HashMap<UUID, Money> map = new HashMap<>();
+		playerdata.forEach((k, v) -> map.put(k, v.clone()));
 
 		try(Connection con = source.getConnection();
 				PreparedStatement statement = con.prepareStatement("SELECT * FROM HyperingEconomyDatabase.ticketdata")){
@@ -381,6 +387,8 @@ public class SQL implements HyperingEconomyAPI {
 			playerdata.get(uuid).add(increase);
 		else
 			Saver.saveLong(uuid, name, Getter.getLong(uuid, name) + increase);
+
+		collect(uuid, increase);
 	}
 
 	@Override
@@ -509,7 +517,6 @@ public class SQL implements HyperingEconomyAPI {
 		updateMedian();
 		//hasTickets(UUID, long)している前提
 		Decrease d = new Decrease(number);
-		//hasTickets(UUID, long)している前提
 		try(Connection con = source.getConnection();
 				PreparedStatement statement = con.prepareStatement("SELECT * FROM HyperingEconomyDatabase.ticketdata WHERE uuid = '" + uuid.toString() + "'")){
 			try(ResultSet result = statement.executeQuery()){
