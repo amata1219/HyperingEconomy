@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.Map.Entry;
 
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -84,6 +85,7 @@ public class HyperingEconomy extends JavaPlugin implements Listener, CommandExec
 		HandlerList.unregisterAll((JavaPlugin) this);
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 		if(args.length == 0){
@@ -127,6 +129,32 @@ public class HyperingEconomy extends JavaPlugin implements Listener, CommandExec
 			int size = list.size();
 			sender.sendMessage("有効プレイヤー数: " + size);
 			sender.sendMessage("計算結果: " + String.valueOf(list.get(size / 2).get()));
+		}else if(args[0].equalsIgnoreCase("see")){
+			if(args.length == 1)
+				return true;
+
+			OfflinePlayer p = getServer().getOfflinePlayer(args[1]);
+			if(p == null || p.getName() == null)
+				return true;
+
+			sender.sendMessage(p.getName() + "の所持金は¥" + SQL.getSQL().getMoney(p.getUniqueId()) + "です。");
+		}else if(args[0].equalsIgnoreCase("set")){
+			if(args.length <= 2)
+				return true;
+
+			OfflinePlayer p = getServer().getOfflinePlayer(args[1]);
+			if(p == null || p.getName() == null)
+				return true;
+
+			long l = 0;
+			try{
+				l = Long.valueOf(args[2]);
+			}catch(NumberFormatException e){
+				return true;
+			}
+
+			SQL.getSQL().setMoney(p.getUniqueId(), l);
+			sender.sendMessage(p.getName() + "の所持金を¥" + l + "に書き換えました。");
 		}
 		return true;
 	}
@@ -146,7 +174,7 @@ public class HyperingEconomy extends JavaPlugin implements Listener, CommandExec
 	private void loadVaultEconomy(){
 		VaultEconomy.load();
 
-		getServer().getServicesManager().register(Economy.class, VaultEconomy.getInstance(), this, ServicePriority.Highest);
+		getServer().getServicesManager().register(Economy.class, VaultEconomy.getInstance(), this, ServicePriority.Lowest);
 	}
 
 	@EventHandler

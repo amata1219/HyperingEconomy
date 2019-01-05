@@ -64,8 +64,8 @@ public class HyperingEconomy extends Plugin implements Listener {
 		config.addDataSourceProperty("user", section.getString("username"));
 		config.addDataSourceProperty("password", section.getString("password"));
 
-		config.setMaximumPoolSize(30);
-		config.setMinimumIdle(30);
+		config.setMaximumPoolSize(10);
+		config.setMinimumIdle(10);
 		config.setMaxLifetime(1800000);
 		config.setConnectionTimeout(5000);
 
