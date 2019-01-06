@@ -174,7 +174,7 @@ public class HyperingEconomy extends JavaPlugin implements Listener, CommandExec
 	private void loadVaultEconomy(){
 		VaultEconomy.load();
 
-		getServer().getServicesManager().register(Economy.class, VaultEconomy.getInstance(), this, ServicePriority.Lowest);
+		getServer().getServicesManager().register(Economy.class, VaultEconomy.getInstance(), this, ServicePriority.Normal);
 	}
 
 	@EventHandler

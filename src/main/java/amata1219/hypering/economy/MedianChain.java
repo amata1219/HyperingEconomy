@@ -4,8 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.LinkedHashMap;
 
 public class MedianChain {
 
@@ -20,7 +19,8 @@ public class MedianChain {
 	private long time;
 	private long latest;
 
-	private Map<Long, Long> chain = new HashMap<>();
+	//private Map<Long, Long> chain = new HashMap<>();
+	private LinkedHashMap<Long, Long> chain = new LinkedHashMap<>();
 
 	private MedianChain(){
 
@@ -34,7 +34,7 @@ public class MedianChain {
 		chain.chain.put(0L, DEFAULT_VALUE);
 
 		try(Connection con = SQL.getSQL().getSource().getConnection();
-				PreparedStatement statement = con.prepareStatement("SELECT * FROM HyperingEconomyDatabase." + chain.table)){
+				PreparedStatement statement = con.prepareStatement("SELECT * FROM HyperingEconomyDatabase." + chain.table + " ORDER BY time ASC")){
 			try(ResultSet result = statement.executeQuery()){
 				while(result.next())
 					chain.chain.put(result.getLong("time"), result.getLong("median"));
@@ -75,11 +75,11 @@ public class MedianChain {
 	}
 
 	public void flag(){
-		if(!flag)
-			flag = true;
+		flag = true;
 	}
 
 	public void update(long median){
+		//System.out.println("DEBUG-UPDATE: " + median);
 		if(latest == median)
 			return;
 
@@ -89,9 +89,8 @@ public class MedianChain {
 			return;
 		}
 
-		chain.put(time, latest);
 		SQL.getSQL().putCommand("INSERT INTO HyperingEconomyDatabase." + SQL.getSQL().name + " VALUES (" + time + "," + latest + ")");
-
+		chain.put(time, latest);
 		time = System.nanoTime();
 		latest = median;
 		flag = false;

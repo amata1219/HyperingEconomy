@@ -62,6 +62,9 @@ public class SQL implements HyperingEconomyAPI {
 
 		sql.load();
 
+		if(!HyperingEconomy.isEconomyEnable())
+			return;
+
 		sql.chain = MedianChain.load(serverName);
 
 		String columnIndex = serverName.name().toLowerCase();
@@ -78,6 +81,7 @@ public class SQL implements HyperingEconomyAPI {
 				result.close();
 			}
 			statement.close();
+			//con.close();
 		}catch(SQLException e){
 			e.printStackTrace();
 		}
@@ -115,9 +119,13 @@ public class SQL implements HyperingEconomyAPI {
 		config.setMaxLifetime(1800000);
 		config.setConnectionTimeout(5000);
 
+		config.setConnectionTestQuery("SELECT 1");
 		config.setConnectionInitSql("SELECT 1");
 
 		source = new HikariDataSource(config);
+
+		if(!HyperingEconomy.isEconomyEnable())
+			return;
 
 		cancel();
 
@@ -200,6 +208,7 @@ public class SQL implements HyperingEconomyAPI {
 						PreparedStatement statement = con.prepareStatement(command)){
 					statement.executeUpdate();
 					statement.close();
+					//con.close();
 				}catch(SQLException e){
 					e.printStackTrace();
 					wish(new Future(){
@@ -233,9 +242,8 @@ public class SQL implements HyperingEconomyAPI {
 	@Override
 	public void updateMedian() {
 		HashMap<UUID, Money> map = new HashMap<>();
-		playerdata.forEach((k, v) -> map.put(k, v.clone()));
-
-		try(Connection con = source.getConnection();
+		SQL.getSQL().playerdata.forEach((k, v) -> map.put(k, v.clone()));
+		try(Connection con = SQL.getSQL().getSource().getConnection();
 				PreparedStatement statement = con.prepareStatement("SELECT * FROM HyperingEconomyDatabase.ticketdata")){
 			try(ResultSet result = statement.executeQuery()){
 				while(result.next()){
@@ -244,29 +252,23 @@ public class SQL implements HyperingEconomyAPI {
 						continue;
 
 					Money money = map.get(uuid);
-					money.add(chain.getTicketPrice(result.getLong("time")) * result.getInt("number"));
-					if(money.get() < 500)
-						map.remove(uuid);
+					money.add(SQL.getSQL().getMedianChain().getTicketPrice(result.getLong("time")) * result.getInt("number"));
 				}
 				result.close();
 			}
 			statement.close();
 		}catch(SQLException e){
 			e.printStackTrace();
-			wish(new Future(){
-
-				@Override
-				public void done() {
-					updateMedian();
-				}
-
-			});
 		}
 
-		List<Money> list = new ArrayList<>(map.values());
+		List<Money> list = new ArrayList<>();
+		map.values().forEach(v -> {
+			if(v.get() >= 500)
+				list.add(v);
+		});
+		list.sort(comparator);
 
 		int size = list.size();
-
 		if(size < 10){
 			chain.update(MedianChain.DEFAULT_VALUE);
 			chain.setFix(true);
@@ -346,6 +348,7 @@ public class SQL implements HyperingEconomyAPI {
 				result.close();
 			}
 			statement.close();
+			//con.close();
 		}catch(SQLException e){
 			e.printStackTrace();
 		}
@@ -457,6 +460,7 @@ public class SQL implements HyperingEconomyAPI {
 				result.close();
 			}
 			statement.close();
+			//con.close();
 		}catch(SQLException e){
 			e.printStackTrace();
 			wish(new Future(){
@@ -542,6 +546,7 @@ public class SQL implements HyperingEconomyAPI {
 				result.close();
 			}
 			statement.close();
+			//con.close();
 		}catch(SQLException e){
 			e.printStackTrace();
 			wish(new Future(){
@@ -568,6 +573,7 @@ public class SQL implements HyperingEconomyAPI {
 				result.close();
 			}
 			statement.close();
+			//con.close();
 		}catch(SQLException e){
 			e.printStackTrace();
 		}

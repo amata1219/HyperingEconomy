@@ -69,6 +69,7 @@ public class HyperingEconomy extends Plugin implements Listener {
 		config.setMaxLifetime(1800000);
 		config.setConnectionTimeout(5000);
 
+		config.setConnectionTestQuery("SELECT 1");
 		config.setConnectionInitSql("SELECT 1");
 
 		source = new HikariDataSource(config);
@@ -99,6 +100,7 @@ public class HyperingEconomy extends Plugin implements Listener {
 				PreparedStatement statement = con.prepareStatement(command)){
 			statement.executeUpdate();
 			statement.close();
+			con.close();
 		}catch(SQLException e){
 			e.printStackTrace();
 		}
@@ -121,6 +123,7 @@ public class HyperingEconomy extends Plugin implements Listener {
 				result.close();
 			}
 			statement.close();
+			con.close();
 		}catch(SQLException e){
 			e.printStackTrace();
 		}

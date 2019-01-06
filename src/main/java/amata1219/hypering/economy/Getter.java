@@ -21,6 +21,7 @@ public class Getter {
 				result.close();
 			}
 			statement.close();
+			//con.close();
 		}catch(SQLException e){
 			e.printStackTrace();
 			SQL.getSQL().wish(new Future(){
@@ -49,6 +50,7 @@ public class Getter {
 				result.close();
 			}
 			statement.close();
+			//con.close();
 		}catch(SQLException e){
 			e.printStackTrace();
 			SQL.getSQL().wish(new Future(){
